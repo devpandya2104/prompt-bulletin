@@ -1,0 +1,36 @@
+name: Run DB Migrations
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/**.sql'
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Run changed SQL migrations in order
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          # Find SQL files changed in this push, sorted alphabetically
+          CHANGED=$(git diff --name-only HEAD~1 HEAD -- 'supabase/*.sql' | sort)
+
+          if [ -z "$CHANGED" ]; then
+            echo "No SQL files changed."
+            exit 0
+          fi
+
+          echo "Running migrations:"
+          echo "$CHANGED"
+
+          for f in $CHANGED; do
+            echo "▶ Running $f ..."
+            psql "$DATABASE_URL" -f "$f"
+            echo "✓ Done: $f"
+          done
