@@ -1,0 +1,41 @@
+import type { Metadata } from "next";
+import { Space_Grotesk, Inter } from "next/font/google";
+import "./globals.css";
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: "PromptBulletin — AI Tools & Website Reviews",
+  description:
+    "Discover the best AI tools through editorial reviews, community upvotes, and structured comparisons. Trusted by 48K+ professionals.",
+  keywords: ["AI tools", "AI reviews", "best AI tools 2026", "AI directory", "prompt tools"],
+  openGraph: {
+    title: "PromptBulletin — AI Tools & Website Reviews",
+    description: "Editorial reviews, real upvotes, and structured comparisons for every AI tool.",
+    type: "website",
+  },
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable}`}>
+      <body className="min-h-screen" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
+        {children}
+      </body>
+    </html>
+  );
+}

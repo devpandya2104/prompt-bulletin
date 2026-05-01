@@ -1,0 +1,54 @@
+"use client";
+import { useState } from "react";
+import { CATEGORIES } from "@/lib/data";
+
+export default function Categories() {
+  const [active, setActive] = useState<string | null>(null);
+
+  return (
+    <section id="categories" className="py-20 px-6" style={{ borderTop: "1px solid var(--border)" }}>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-end justify-between mb-10 gap-4 flex-wrap">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--accent)" }}>Browse by category</p>
+            <h2 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}>Every use case, covered</h2>
+          </div>
+          <a href="#" className="text-sm font-medium flex items-center gap-1 no-underline whitespace-nowrap" style={{ color: "var(--accent)" }}>
+            View all
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </a>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setActive(active === cat.id ? null : cat.id)}
+              className="rounded-xl p-4 text-left transition-all duration-200 flex items-center justify-between cursor-pointer"
+              style={{
+                background: active === cat.id ? "var(--accent-dim)" : "var(--bg3)",
+                border:     `1px solid ${active === cat.id ? "var(--accent)" : "var(--border)"}`,
+              }}
+              onMouseEnter={(e) => { if (active !== cat.id) { e.currentTarget.style.borderColor = "var(--border2)"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; } }}
+              onMouseLeave={(e) => { if (active !== cat.id) { e.currentTarget.style.borderColor = "var(--border)";  e.currentTarget.style.background = "var(--bg3)"; } }}
+            >
+              <div className="flex flex-col gap-1 min-w-0 flex-1">
+                <div className="text-xl leading-none">{cat.icon}</div>
+                <div
+                  className="text-[15px] font-semibold leading-snug break-words"
+                  style={{ fontFamily: "var(--font-space)", color: active === cat.id ? "var(--accent)" : "var(--text)" }}
+                >
+                  {cat.label}
+                </div>
+                <div className="text-xs" style={{ color: "var(--text3)" }}>{cat.count} tools</div>
+              </div>
+              <div className="flex-shrink-0 ml-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={active === cat.id ? "var(--accent)" : "var(--text3)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

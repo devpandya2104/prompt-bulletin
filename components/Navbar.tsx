@@ -1,0 +1,127 @@
+"use client";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+
+const navLinks = [
+  { label: "Discover",      href: "#discover" },
+  { label: "Categories",    href: "#categories" },
+  { label: "Blog",          href: "#blog" },
+  { label: "About",         href: "#about" },
+  { label: "Submit a Tool", href: "#submit" },
+];
+
+export default function Navbar() {
+  const [scrolled, setScrolled]     = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <nav
+      className="fixed top-0 left-0 right-0 z-50 px-6 transition-all duration-300"
+      style={{
+        borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent",
+        background:   scrolled ? "rgba(10,10,11,0.92)"    : "transparent",
+        backdropFilter: scrolled ? "blur(16px)" : "none",
+      }}
+    >
+      <div className="max-w-7xl mx-auto h-16 flex items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2.5 no-underline">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-black text-sm"
+            style={{ background: "var(--accent)", fontFamily: "var(--font-space)" }}
+          >
+            P
+          </div>
+          <span
+            className="font-bold text-[17px] tracking-tight"
+            style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}
+          >
+            Prompt<span style={{ color: "var(--accent)" }}>Bulletin</span>
+          </span>
+        </Link>
+
+        {/* Desktop nav */}
+        <div className="hidden md:flex items-center gap-1">
+          {navLinks.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              className="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 no-underline"
+              style={{
+                color:  link.label === "Submit a Tool" ? "var(--accent)"  : "var(--text2)",
+                border: link.label === "Submit a Tool" ? "1px solid var(--accent-dim)" : "1px solid transparent",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color      = "var(--text)";
+                e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color      = link.label === "Submit a Tool" ? "var(--accent)" : "var(--text2)";
+                e.currentTarget.style.background = "transparent";
+              }}
+            >
+              {link.label}
+            </a>
+          ))}
+        </div>
+
+        {/* Auth buttons + hamburger */}
+        <div className="flex items-center gap-2.5">
+          <button
+            className="hidden md:block px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer"
+            style={{ border: "1px solid var(--border2)", color: "var(--text2)", background: "transparent" }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text2)"; e.currentTarget.style.borderColor = "var(--border2)"; }}
+          >
+            Log in
+          </button>
+          <button
+            className="hidden md:block px-4 py-1.5 rounded-lg text-sm font-semibold cursor-pointer transition-opacity duration-150 hover:opacity-85"
+            style={{ background: "var(--accent)", color: "#000", border: "none" }}
+          >
+            Sign up free
+          </button>
+          <button
+            className="md:hidden p-1 bg-transparent border-0 cursor-pointer"
+            style={{ color: "var(--text2)" }}
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="md:hidden px-6 pb-6 pt-0" style={{ background: "var(--bg2)", borderTop: "1px solid var(--border)" }}>
+          {navLinks.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              onClick={() => setMobileOpen(false)}
+              className="block py-3 text-[15px] font-medium no-underline"
+              style={{ borderBottom: "1px solid var(--border)", color: "var(--text)" }}
+            >
+              {link.label}
+            </a>
+          ))}
+          <div className="flex gap-2.5 mt-4">
+            <button className="flex-1 py-2.5 rounded-lg text-sm font-medium cursor-pointer" style={{ border: "1px solid var(--border2)", color: "var(--text2)", background: "transparent" }}>Log in</button>
+            <button className="flex-1 py-2.5 rounded-lg text-sm font-semibold cursor-pointer" style={{ background: "var(--accent)", color: "#000", border: "none" }}>Sign up free</button>
+          </div>
+        </div>
+      )}
+    </nav>
+  );
+}
