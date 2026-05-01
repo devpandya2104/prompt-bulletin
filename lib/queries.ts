@@ -1,5 +1,35 @@
 import { createClient } from "./supabase/client";
 
+export type ToolScore = { label: string; score: number };
+export type ToolFeature = { name: string; included: boolean | string };
+export type PricingTier = { name: string; price: string; period: string; highlight: boolean; features: string[] };
+
+export type ToolReview = {
+  id: string;
+  tool_id: string;
+  author_name: string;
+  author_initials: string;
+  role: string;
+  rating: number;
+  date_text: string;
+  review_text: string;
+  helpful_count: number;
+};
+
+export type ToolDetail = Tool & {
+  tagline: string | null;
+  summary: string | null;
+  pros: string[];
+  cons: string[];
+  best_for: string[];
+  company: string | null;
+  founded: string | null;
+  editor_rating: number;
+  scores: ToolScore[];
+  tool_features: ToolFeature[];
+  pricing_tiers: PricingTier[];
+};
+
 export type Category = {
   id: string;
   name: string;
@@ -139,4 +169,17 @@ export async function submitTool(data: {
 export async function subscribeNewsletter(email: string) {
   const supabase = createClient();
   return supabase.from("newsletter_subscribers").insert({ email });
+}
+
+export async function submitReview(data: {
+  tool_id: string;
+  author_name: string;
+  author_initials: string;
+  role: string;
+  rating: number;
+  date_text: string;
+  review_text: string;
+}) {
+  const supabase = createClient();
+  return supabase.from("tool_reviews").insert(data);
 }

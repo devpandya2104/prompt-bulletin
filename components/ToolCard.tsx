@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { Tool } from "@/lib/queries";
 
@@ -53,14 +54,14 @@ export default function ToolCard({ tool, userUpvotes }: { tool: Tool; userUpvote
     <div
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      className="rounded-2xl p-5 cursor-pointer transition-all duration-200 flex flex-col gap-3.5"
+      className="rounded-2xl p-5 transition-all duration-200 flex flex-col gap-3.5"
       style={{
         background: hover ? "rgba(255,255,255,0.03)" : "var(--bg2)",
         border:     `1px solid ${hover ? "var(--border2)" : "var(--border)"}`,
       }}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
+        <Link href={`/tools/${tool.slug}`} className="flex-1 min-w-0 no-underline" style={{ textDecoration: "none" }}>
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <span className="text-base font-bold" style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}>{tool.name}</span>
             {tool.tag && tool.tag_type && (
@@ -77,7 +78,7 @@ export default function ToolCard({ tool, userUpvotes }: { tool: Tool; userUpvote
             )}
           </div>
           <p className="text-[13.5px] leading-snug m-0" style={{ color: "var(--text2)" }}>{tool.description}</p>
-        </div>
+        </Link>
 
         <button onClick={handleUpvote} disabled={loading}
           className="flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-xl flex-shrink-0 transition-all duration-150 cursor-pointer disabled:opacity-70"
