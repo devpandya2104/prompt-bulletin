@@ -1,12 +1,12 @@
 export const CATEGORIES = [
-  { id: 'writing',      label: 'Writing & Copy',    count: 142, icon: '✍' },
+  { id: 'writing',      label: 'Writing & Copy',    count: 142, icon: '✍️' },
   { id: 'image',        label: 'Image Generation',  count: 98,  icon: '🎨' },
-  { id: 'code',         label: 'Code & Dev',         count: 87,  icon: '⌨' },
-  { id: 'video',        label: 'Video & Media',      count: 64,  icon: '▶' },
-  { id: 'data',         label: 'Data & Analytics',   count: 53,  icon: '◈' },
-  { id: 'productivity', label: 'Productivity',       count: 119, icon: '◆' },
-  { id: 'research',     label: 'Research',           count: 41,  icon: '◎' },
-  { id: 'audio',        label: 'Audio & Voice',      count: 38,  icon: '◉' },
+  { id: 'code',         label: 'Code & Dev',         count: 87,  icon: '💻' },
+  { id: 'video',        label: 'Video & Media',      count: 64,  icon: '🎬' },
+  { id: 'data',         label: 'Data & Analytics',   count: 53,  icon: '📊' },
+  { id: 'productivity', label: 'Productivity',       count: 119, icon: '⚡' },
+  { id: 'research',     label: 'Research',           count: 41,  icon: '🔍' },
+  { id: 'audio',        label: 'Audio & Voice',      count: 38,  icon: '🎙️' },
 ];
 
 export const TOOLS = [
