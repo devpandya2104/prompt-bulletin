@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import { CATEGORIES } from "@/lib/data";
+import type { Category } from "@/lib/queries";
 
-export default function Categories() {
+export default function Categories({ categories }: { categories: Category[] }) {
   const [active, setActive] = useState<string | null>(null);
 
   return (
@@ -20,30 +20,27 @@ export default function Categories() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => setActive(active === cat.id ? null : cat.id)}
+              onClick={() => setActive(active === cat.slug ? null : cat.slug)}
               className="rounded-xl p-4 text-left transition-all duration-200 flex items-center justify-between cursor-pointer"
               style={{
-                background: active === cat.id ? "var(--accent-dim)" : "var(--bg3)",
-                border:     `1px solid ${active === cat.id ? "var(--accent)" : "var(--border)"}`,
+                background: active === cat.slug ? "var(--accent-dim)" : "var(--bg3)",
+                border:     `1px solid ${active === cat.slug ? "var(--accent)" : "var(--border)"}`,
               }}
-              onMouseEnter={(e) => { if (active !== cat.id) { e.currentTarget.style.borderColor = "var(--border2)"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; } }}
-              onMouseLeave={(e) => { if (active !== cat.id) { e.currentTarget.style.borderColor = "var(--border)";  e.currentTarget.style.background = "var(--bg3)"; } }}
+              onMouseEnter={(e) => { if (active !== cat.slug) { e.currentTarget.style.borderColor = "var(--border2)"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; } }}
+              onMouseLeave={(e) => { if (active !== cat.slug) { e.currentTarget.style.borderColor = "var(--border)";  e.currentTarget.style.background = "var(--bg3)"; } }}
             >
               <div className="flex flex-col gap-1 min-w-0 flex-1">
                 <div className="text-xl leading-none">{cat.icon}</div>
-                <div
-                  className="text-[15px] font-semibold leading-snug break-words"
-                  style={{ fontFamily: "var(--font-space)", color: active === cat.id ? "var(--accent)" : "var(--text)" }}
-                >
-                  {cat.label}
+                <div className="text-[15px] font-semibold leading-snug break-words"
+                  style={{ fontFamily: "var(--font-space)", color: active === cat.slug ? "var(--accent)" : "var(--text)" }}>
+                  {cat.name}
                 </div>
-                <div className="text-xs" style={{ color: "var(--text3)" }}>{cat.count} tools</div>
               </div>
               <div className="flex-shrink-0 ml-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={active === cat.id ? "var(--accent)" : "var(--text3)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={active === cat.slug ? "var(--accent)" : "var(--text3)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
               </div>
             </button>
           ))}

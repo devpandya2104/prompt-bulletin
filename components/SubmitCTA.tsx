@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { CATEGORIES } from "@/lib/data";
+import { createClient } from "@/lib/supabase/client";
+import type { Category } from "@/lib/queries";
 
 const perks = [
   "Free to list — always",
@@ -9,12 +10,34 @@ const perks = [
   "Update your listing at any time",
 ];
 
-export default function SubmitCTA() {
+export default function SubmitCTA({ categories }: { categories: Category[] }) {
   const [step,      setStep]      = useState(0);
-  const [form,      setForm]      = useState({ name: "", url: "", category: "", email: "" });
+  const [form,      setForm]      = useState({ name: "", url: "", category_id: "", email: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState("");
 
   const update = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const canStep1 = form.name && form.url && form.category_id;
+
+  const handleSubmit = async () => {
+    if (!form.email) return;
+    setLoading(true);
+    setError("");
+    const supabase = createClient();
+    const { error: err } = await supabase.from("tool_submissions").insert({
+      name:            form.name,
+      url:             form.url,
+      category_id:     form.category_id,
+      submitter_email: form.email,
+    });
+    if (err) {
+      setError("Something went wrong. Please try again.");
+    } else {
+      setSubmitted(true);
+    }
+    setLoading(false);
+  };
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "12px 16px", borderRadius: 10,
@@ -22,18 +45,14 @@ export default function SubmitCTA() {
     color: "var(--text)", fontSize: 14, fontFamily: "var(--font-inter)", outline: "none",
     transition: "border-color 0.2s",
   };
-
   const labelStyle: React.CSSProperties = {
     fontSize: 12, fontWeight: 600, color: "var(--text2)",
     display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em",
   };
 
-  const canStep1 = form.name && form.url && form.category;
-
   return (
     <section id="submit" className="py-20 px-6" style={{ borderTop: "1px solid var(--border)", background: "var(--bg2)" }}>
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20 items-center">
-        {/* Left */}
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--accent)" }}>Submit your tool</p>
           <h2 className="text-4xl font-bold tracking-tight leading-tight mb-4" style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}>
@@ -54,7 +73,6 @@ export default function SubmitCTA() {
           </div>
         </div>
 
-        {/* Right: Form */}
         <div className="rounded-2xl p-7" style={{ background: "var(--bg3)", border: "1px solid var(--border)" }}>
           {submitted ? (
             <div className="text-center py-10">
@@ -63,19 +81,16 @@ export default function SubmitCTA() {
               </div>
               <h3 className="text-xl font-bold mb-2" style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}>Submission received!</h3>
               <p className="text-sm" style={{ color: "var(--text2)" }}>
-                We&apos;ll review your tool and email you at <strong style={{ color: "var(--text)" }}>{form.email}</strong> within 5 business days.
+                We&apos;ll review <strong style={{ color: "var(--text)" }}>{form.name}</strong> and email you at <strong style={{ color: "var(--text)" }}>{form.email}</strong> within 5 business days.
               </p>
-              <button
-                onClick={() => { setSubmitted(false); setStep(0); setForm({ name: "", url: "", category: "", email: "" }); }}
+              <button onClick={() => { setSubmitted(false); setStep(0); setForm({ name: "", url: "", category_id: "", email: "" }); }}
                 className="mt-6 px-6 py-2.5 rounded-lg text-sm cursor-pointer"
-                style={{ background: "transparent", border: "1px solid var(--border2)", color: "var(--text2)" }}
-              >
+                style={{ background: "transparent", border: "1px solid var(--border2)", color: "var(--text2)" }}>
                 Submit another
               </button>
             </div>
           ) : (
             <>
-              {/* Progress */}
               <div className="flex gap-1.5 mb-7">
                 {[0, 1].map((s) => (
                   <div key={s} className="flex-1 h-0.5 rounded-full transition-all duration-300"
@@ -99,16 +114,14 @@ export default function SubmitCTA() {
                   </div>
                   <div>
                     <label style={labelStyle}>Category *</label>
-                    <select value={form.category} onChange={(e) => update("category", e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+                    <select value={form.category_id} onChange={(e) => update("category_id", e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
                       <option value="">Select a category…</option>
-                      {CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+                      {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                   </div>
-                  <button
-                    onClick={() => canStep1 && setStep(1)}
+                  <button onClick={() => canStep1 && setStep(1)}
                     className="py-3 rounded-xl font-bold text-sm cursor-pointer transition-opacity mt-1"
-                    style={{ background: "var(--accent)", border: "none", color: "#000", opacity: canStep1 ? 1 : 0.4 }}
-                  >
+                    style={{ background: "var(--accent)", border: "none", color: "#000", opacity: canStep1 ? 1 : 0.4 }}>
                     Continue →
                   </button>
                 </div>
@@ -126,6 +139,7 @@ export default function SubmitCTA() {
                       onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
                       onBlur={(e)  => (e.target.style.borderColor = "var(--border2)")} />
                   </div>
+                  {error && <p className="text-xs" style={{ color: "#ef4444" }}>{error}</p>}
                   <p className="text-xs leading-relaxed" style={{ color: "var(--text3)" }}>
                     We&apos;ll use this to send you status updates. We don&apos;t share your email with anyone.
                   </p>
@@ -134,10 +148,10 @@ export default function SubmitCTA() {
                       style={{ background: "transparent", border: "1px solid var(--border2)", color: "var(--text2)" }}>
                       ← Back
                     </button>
-                    <button onClick={() => form.email && setSubmitted(true)}
+                    <button onClick={handleSubmit} disabled={!form.email || loading}
                       className="flex-[2] py-3 rounded-xl font-bold text-sm cursor-pointer transition-opacity"
-                      style={{ background: "var(--accent)", border: "none", color: "#000", opacity: form.email ? 1 : 0.4 }}>
-                      Submit tool
+                      style={{ background: "var(--accent)", border: "none", color: "#000", opacity: form.email && !loading ? 1 : 0.4 }}>
+                      {loading ? "Submitting…" : "Submit tool"}
                     </button>
                   </div>
                 </div>
