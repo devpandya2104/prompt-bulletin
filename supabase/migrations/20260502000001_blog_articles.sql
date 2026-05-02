@@ -35,31 +35,34 @@ UPDATE blog_posts SET tags = ARRAY['Code Editors','AI Coding','Developer Tools',
 UPDATE blog_posts SET tags = ARRAY['Editorial','Methodology','Transparency','Reviews'] WHERE slug = 'how-we-score-ai-tools';
 
 -- Body blocks for "cursor-vs-github-copilot"
-UPDATE blog_posts SET body_blocks = $$[
+UPDATE blog_posts
+SET body_blocks = '[
   {"type":"h2","id":"intro","text":"The Promise vs. The Reality"},
   {"type":"p","text":"Both Cursor and GitHub Copilot promise to make you dramatically more productive. Cursor markets itself as an AI-first IDE, while Copilot positions as a smart autocomplete layer on top of your existing editor. After three months of using both on real production code — not toy projects — here is what actually matters."},
-  {"type":"p","text":"The short version: they are solving different problems. Copilot excels at line-by-line autocomplete. Cursor wins when you need to make large changes across files, understand an unfamiliar codebase, or have a conversation about architecture."},
-  {"type":"h2","id":"copilot","text":"GitHub Copilot: Strengths & Weaknesses"},
+  {"type":"p","text":"The short version: they solve different problems. Copilot excels at line-by-line autocomplete. Cursor wins when you need to make large changes across files, understand an unfamiliar codebase, or have a conversation about architecture."},
+  {"type":"h2","id":"copilot","text":"GitHub Copilot: Strengths and Weaknesses"},
   {"type":"callout","variant":"info","title":"Who it is for","text":"Developers who love their current editor (VS Code, JetBrains, Vim) and want AI assistance without switching tools. Teams already on GitHub Enterprise."},
-  {"type":"p","text":"Copilot's autocomplete is genuinely impressive. It suggests full functions based on context, learns your patterns within a session, and rarely produces code that is outright wrong — just subtly off. The new Copilot Chat feature brings conversational AI into VS Code, but it feels bolted on compared to Cursor's deeply integrated approach."},
+  {"type":"p","text":"Copilot autocomplete is genuinely impressive. It suggests full functions based on context, learns your patterns within a session, and rarely produces code that is outright wrong — just subtly off. The Copilot Chat feature brings conversational AI into VS Code, but it feels bolted on compared to the deeply integrated approach Cursor takes."},
   {"type":"p","text":"The biggest limitation: Copilot has no real understanding of your project structure. It cannot refactor across five files simultaneously or explain why a bug is happening in the broader system context."},
-  {"type":"h2","id":"cursor","text":"Cursor: Strengths & Weaknesses"},
-  {"type":"callout","variant":"tip","title":"Cursor's killer feature","text":"Cmd+K lets you select any code block and describe a change in plain English. Cursor rewrites it, shows a diff, and you accept or reject. This workflow alone justifies the switch for many developers."},
+  {"type":"h2","id":"cursor","text":"Cursor: Strengths and Weaknesses"},
+  {"type":"callout","variant":"tip","title":"The killer feature in Cursor","text":"Cmd+K lets you select any code block and describe a change in plain English. Cursor rewrites it, shows a diff, and you accept or reject. This workflow alone justifies the switch for many developers."},
   {"type":"p","text":"Cursor is built on VS Code, so your extensions and muscle memory transfer. The codebase-wide understanding is the real differentiator: add a context file with @ mentions and Cursor will reference your actual schemas, component patterns, and conventions when generating code."},
   {"type":"p","text":"Downsides: it is a separate app, so you are not in your existing IDE. Some enterprise teams will not allow it due to code being sent to Cursor servers. The free tier is limited; you will hit the ceiling quickly on real projects."},
   {"type":"h2","id":"comparison","text":"Head-to-Head Comparison"},
   {"type":"table","headers":["Feature","Cursor","GitHub Copilot"],"rows":[["Autocomplete","Very good","Excellent"],["Multi-file edits","Excellent","Limited"],["Codebase context","Deep (@ mentions)","Shallow"],["Chat integration","Native, seamless","Bolted on"],["Editor","Standalone (VS Code fork)","Plugin for any editor"],["Privacy","Code sent to Cursor","Code sent to GitHub/OpenAI"],["Free tier","500 completions/mo","Unlimited (students/OSS free)"],["Paid","$20/mo","$10/mo ($19 for Business)"]]},
   {"type":"h2","id":"verdict","text":"The Verdict"},
-  {"type":"pullquote","text":"If you write code alone or in a small team and you are willing to switch editors, Cursor is the better tool in 2026. If your team lives in GitHub and needs something that just works everywhere, Copilot is the safer bet."},
+  {"type":"pullquote","text":"If you write code alone or in a small team and are willing to switch editors, Cursor is the better tool in 2026. If your team lives in GitHub and needs something that just works everywhere, Copilot is the safer bet."},
   {"type":"p","text":"For most individual developers, Cursor is worth the $20/month and the editor switch. The productivity gains on complex tasks — understanding new codebases, large refactors, debugging across files — are substantial and real."},
-  {"type":"p","text":"For teams, especially enterprise teams, Copilot's ecosystem integration, privacy controls, and lower per-seat cost make it the pragmatic choice. Copilot is also catching up fast; the gap may narrow significantly in the next 12 months."},
+  {"type":"p","text":"For teams, especially enterprise teams, Copilot ecosystem integration, privacy controls, and lower per-seat cost make it the pragmatic choice. Copilot is also catching up fast; the gap may narrow significantly in the next 12 months."},
   {"type":"toolcta","tool_name":"Cursor","tool_slug":"cursor","cta_text":"Try Cursor free — 2,000 completions included"}
-]$$::jsonb WHERE slug = 'cursor-vs-github-copilot';
+]'::jsonb
+WHERE slug = 'cursor-vs-github-copilot';
 
 -- Body blocks for "how-we-score-ai-tools"
-UPDATE blog_posts SET body_blocks = $$[
+UPDATE blog_posts
+SET body_blocks = '[
   {"type":"h2","id":"why","text":"Why Methodology Transparency Matters"},
-  {"type":"p","text":"Most AI tool directories are pay-to-rank. A tool's position in a list correlates more with its affiliate commission rate than its actual quality. We built PromptBulletin because we were frustrated with that. Our editorial scores are completely independent from commercial relationships."},
+  {"type":"p","text":"Most AI tool directories are pay-to-rank. A tool position in a list correlates more with its affiliate commission rate than its actual quality. We built PromptBulletin because we were frustrated with that. Our editorial scores are completely independent from commercial relationships."},
   {"type":"p","text":"Every tool reviewed on PromptBulletin goes through the same 12-point rubric. We score across four categories: Output Quality, Ease of Use, Value, and Reliability. Each category has three sub-criteria, each scored 1-10, and the final score is a weighted average."},
   {"type":"h2","id":"output","text":"Output Quality (35% of score)"},
   {"type":"callout","variant":"info","title":"What we test","text":"We run every tool through a standardized set of test prompts specific to its category. Writing tools get 20 prompts ranging from simple blog intros to complex technical copy. Code tools get 15 real debugging tasks from open-source repos."},
@@ -67,16 +70,18 @@ UPDATE blog_posts SET body_blocks = $$[
   {"type":"h2","id":"ease","text":"Ease of Use (30% of score)"},
   {"type":"p","text":"Onboarding speed, interface clarity, and learning curve are tested by having three team members with varying technical backgrounds use the tool for the first time. We measure time-to-first-useful-output, number of support docs consulted, and subjective confusion rating."},
   {"type":"h2","id":"value","text":"Value for Money (25% of score)"},
-  {"type":"p","text":"We compare the tool's pricing against comparable alternatives and against the value delivered at each tier. A tool that costs $100/mo but saves a full-time employee 10 hours/week scores better on value than a $10/mo tool that saves 30 minutes."},
+  {"type":"p","text":"We compare each tool pricing against comparable alternatives and against the value delivered at each tier. A tool that costs $100/mo but saves a full-time employee 10 hours/week scores better on value than a $10/mo tool that saves 30 minutes."},
   {"type":"h2","id":"reliability","text":"Reliability (10% of score)"},
   {"type":"p","text":"Uptime, consistency of outputs between sessions, and customer support responsiveness. We test tools for at least 30 days before publishing a review. Any tool that changes its pricing or features dramatically after review will have its score updated."},
-  {"type":"h2","id":"updates","text":"Score Updates & Re-Reviews"},
+  {"type":"h2","id":"updates","text":"Score Updates and Re-Reviews"},
   {"type":"pullquote","text":"AI tools move fast. A 9/10 tool today might be a 7/10 in six months. We schedule re-reviews for every major tool at least once per year, and immediately when a tool makes significant changes."},
   {"type":"p","text":"Community upvotes and reviews factor into the displayed rating but are kept separate from the editor score. Both are shown transparently so you can weigh them appropriately."}
-]$$::jsonb WHERE slug = 'how-we-score-ai-tools';
+]'::jsonb
+WHERE slug = 'how-we-score-ai-tools';
 
 -- List items for "best-ai-writing-tools-2026"
-UPDATE blog_posts SET list_items = $$[
+UPDATE blog_posts
+SET list_items = '[
   {
     "rank": 1,
     "tool_name": "Jasper AI",
@@ -99,7 +104,7 @@ UPDATE blog_posts SET list_items = $$[
     "pricing": "Free / $49/mo",
     "has_free_tier": true,
     "verdict": "Best Free Tier",
-    "description": "Copy.ai's free tier is genuinely useful, not a crippled demo. You get access to most templates and the chat interface without a credit card. For teams, the Workflows feature automates multi-step content pipelines — brief in, full campaign out.",
+    "description": "Copy.ai free tier is genuinely useful, not a crippled demo. You get access to most templates and the chat interface without a credit card. For teams, the Workflows feature automates multi-step content pipelines — brief in, full campaign out.",
     "pros": ["Generous free tier with no credit card required","Workflows automate repetitive content tasks","Strong short-form copy (ads, social, emails)","Good for teams with shared workspaces"],
     "cons": ["Long-form content less polished than Jasper","Workflow builder has a learning curve","SEO features are basic"]
   },
@@ -142,4 +147,5 @@ UPDATE blog_posts SET list_items = $$[
     "pros": ["Cheapest credible paid option at $9/mo","Simple, fast interface — no learning curve","Good for short-form content and quick drafts","40+ use case templates"],
     "cons": ["Long-form content is noticeably weaker","No SEO integration","Limited customization for brand voice","Not suitable for high-volume content teams"]
   }
-]$$::jsonb WHERE slug = 'best-ai-writing-tools-2026';
+]'::jsonb
+WHERE slug = 'best-ai-writing-tools-2026';
