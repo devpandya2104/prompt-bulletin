@@ -71,6 +71,39 @@ export type BlogPost = {
   published_at: string | null;
 };
 
+export type BodyBlock =
+  | { type: "h2"; id: string; text: string }
+  | { type: "p"; text: string }
+  | { type: "callout"; variant: "info" | "tip" | "warning"; title: string; text: string }
+  | { type: "pullquote"; text: string }
+  | { type: "datapoints"; items: { value: string; label: string }[] }
+  | { type: "table"; headers: string[]; rows: string[][] }
+  | { type: "toolcta"; tool_name: string; tool_slug: string; cta_text: string };
+
+export type ListItem = {
+  rank: number;
+  tool_name: string;
+  tool_slug: string | null;
+  category: string;
+  rating: number;
+  pricing: string;
+  has_free_tier: boolean;
+  verdict: string;
+  description: string;
+  pros: string[];
+  cons: string[];
+};
+
+export type BlogPostDetail = BlogPost & {
+  post_type: "article" | "listicle";
+  author_role: string | null;
+  author_bio: string | null;
+  tags: string[];
+  body_blocks: BodyBlock[];
+  list_items: ListItem[];
+  related_tool_slug: string | null;
+};
+
 export async function getCategories(): Promise<Category[]> {
   const supabase = createClient();
   const { data } = await supabase
