@@ -16,6 +16,8 @@ export type ToolReview = {
   helpful_count: number;
 };
 
+export type Screenshot = { url: string; caption: string };
+
 export type ToolDetail = Tool & {
   tagline: string | null;
   summary: string | null;
@@ -28,6 +30,9 @@ export type ToolDetail = Tool & {
   scores: ToolScore[];
   tool_features: ToolFeature[];
   pricing_tiers: PricingTier[];
+  link_rel: "nofollow" | "dofollow" | "sponsored";
+  screenshots: Screenshot[];
+  is_published: boolean;
 };
 
 export type Category = {

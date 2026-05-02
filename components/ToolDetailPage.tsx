@@ -188,7 +188,9 @@ function ToolHero({ tool, upvoted, setUpvoted, upvoteCount, setUpvoteCount, save
             </div>
 
             {tool.website_url && (
-              <a href={tool.website_url} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 11, background: "var(--accent)", color: "#000", fontWeight: 700, fontSize: 14, textDecoration: "none", transition: "opacity 0.15s" }}
+              <a href={tool.website_url} target="_blank"
+                rel={`noopener noreferrer${tool.link_rel === "nofollow" || tool.link_rel === "sponsored" ? ` ${tool.link_rel}` : ""}`}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 11, background: "var(--accent)", color: "#000", fontWeight: 700, fontSize: 14, textDecoration: "none", transition: "opacity 0.15s" }}
                 onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
                 onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
                 <Icon name="external" size={14} color="#000" />
@@ -290,22 +292,36 @@ function ProsCons({ tool }: { tool: ToolDetail }) {
 // ── Screenshot Gallery ────────────────────────────────────────────────────────
 function Gallery({ tool }: { tool: ToolDetail }) {
   const [active, setActive] = useState(0);
-  const items = ["Main interface", "Key features", "Settings & config", "Mobile view"];
+  const shots = tool.screenshots?.length
+    ? tool.screenshots
+    : [{ url: "", caption: "Main interface" }, { url: "", caption: "Key features" }, { url: "", caption: "Settings & config" }, { url: "", caption: "Mobile view" }];
+  const cur = shots[active];
   return (
     <div>
       <h2 style={{ fontFamily: "var(--font-space)", fontSize: 22, fontWeight: 700, color: "var(--text)", marginBottom: 20, letterSpacing: "-0.02em" }}>Screenshots</h2>
-      <div style={{ height: 360, background: "var(--bg3)", borderRadius: 14, border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12, position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 12px)" }} />
-        <div style={{ textAlign: "center", position: "relative" }}>
-          <div style={{ fontFamily: "monospace", fontSize: 12, color: "var(--text3)", marginBottom: 8 }}>[ screenshot {active + 1} of {items.length} ]</div>
-          <div style={{ fontSize: 14, color: "var(--text3)" }}>{items[active]}</div>
-          <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 8 }}>Add real screenshots via the admin panel</div>
-        </div>
+      <div style={{ height: 360, background: "var(--bg3)", borderRadius: 14, border: "1px solid var(--border)", marginBottom: 12, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {cur.url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={cur.url} alt={cur.caption} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <>
+            <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 12px)" }} />
+            <div style={{ textAlign: "center", position: "relative" }}>
+              <div style={{ fontFamily: "monospace", fontSize: 12, color: "var(--text3)", marginBottom: 8 }}>[ screenshot {active + 1} of {shots.length} ]</div>
+              <div style={{ fontSize: 14, color: "var(--text3)" }}>{cur.caption}</div>
+              <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 8 }}>Add real screenshots via the admin panel</div>
+            </div>
+          </>
+        )}
       </div>
       <div style={{ display: "flex", gap: 10 }}>
-        {items.map((item, i) => (
-          <button key={i} onClick={() => setActive(i)} style={{ flex: 1, height: 72, background: "var(--bg3)", borderRadius: 8, border: `1px solid ${active === i ? "var(--accent)" : "var(--border)"}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}>
-            <span style={{ fontSize: 11, color: active === i ? "var(--accent)" : "var(--text3)", fontFamily: "monospace" }}>{i + 1}</span>
+        {shots.map((shot, i) => (
+          <button key={i} onClick={() => setActive(i)} style={{ flex: 1, height: 72, background: "var(--bg3)", borderRadius: 8, border: `1px solid ${active === i ? "var(--accent)" : "var(--border)"}`, cursor: "pointer", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s", position: "relative" }}>
+            {shot.url
+              // eslint-disable-next-line @next/next/no-img-element
+              ? <img src={shot.url} alt={shot.caption} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              : <span style={{ fontSize: 11, color: active === i ? "var(--accent)" : "var(--text3)", fontFamily: "monospace" }}>{i + 1}</span>
+            }
           </button>
         ))}
       </div>
