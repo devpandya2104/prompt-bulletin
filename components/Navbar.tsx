@@ -6,11 +6,11 @@ import AuthModal from "./AuthModal";
 import type { User } from "@supabase/supabase-js";
 
 const navLinks = [
-  { label: "Discover",      href: "#discover" },
-  { label: "Categories",    href: "#categories" },
-  { label: "Blog",          href: "#blog" },
-  { label: "About",         href: "#about" },
-  { label: "Submit a Tool", href: "#submit" },
+  { label: "Discover",      href: "/#discover" },
+  { label: "Categories",    href: "/#categories" },
+  { label: "Blog",          href: "/blog" },
+  { label: "About",         href: "/#about" },
+  { label: "Submit a Tool", href: "/#submit" },
 ];
 
 export default function Navbar() {

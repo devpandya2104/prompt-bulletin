@@ -13,6 +13,7 @@
   --accent2:     oklch(72% 0.19 198);
   --accent-dim:  oklch(72% 0.19 52 / 0.15);
   --accent2-dim: oklch(72% 0.19 198 / 0.12);
+  --font-lora:   var(--font-lora);
   --green:       oklch(72% 0.18 145);
   --green-dim:   oklch(72% 0.18 145 / 0.13);
   --red:         oklch(65% 0.2 25);
