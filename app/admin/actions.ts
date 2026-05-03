@@ -74,3 +74,30 @@ export async function deleteBlogPost(id: string) {
   revalidatePath("/", "layout");
 }
 
+// ── Category actions ───────────────────────────────────────────────
+
+export async function saveCategory(id: string, data: Record<string, unknown>) {
+  const supabase = await createAdminClient();
+  const { error } = await supabase.from("categories").update(data).eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/categories");
+  revalidatePath("/", "layout");
+}
+
+export async function createCategory(data: Record<string, unknown>) {
+  const supabase = await createAdminClient();
+  const { data: cat, error } = await supabase.from("categories").insert(data).select().single();
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/categories");
+  revalidatePath("/", "layout");
+  return cat as { id: string; slug: string };
+}
+
+export async function deleteCategory(id: string) {
+  const supabase = await createAdminClient();
+  const { error } = await supabase.from("categories").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/categories");
+  revalidatePath("/", "layout");
+}
+
