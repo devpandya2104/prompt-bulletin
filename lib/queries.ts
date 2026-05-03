@@ -73,6 +73,7 @@ export type BlogPost = {
   read_time: string;
   cover_image_url: string | null;
   upvote_count: number;
+  is_published: boolean;
   published_at: string | null;
 };
 
@@ -154,7 +155,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
   const supabase = createClient();
   const { data } = await supabase
     .from("blog_posts")
-    .select("id, title, slug, excerpt, author_name, author_initials, category, read_time, cover_image_url, upvote_count, published_at")
+    .select("id, title, slug, excerpt, author_name, author_initials, category, read_time, cover_image_url, upvote_count, is_published, published_at")
     .eq("is_published", true)
     .order("published_at", { ascending: false })
     .limit(3);
