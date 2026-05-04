@@ -265,13 +265,13 @@ export default function ArticlePage({ post }: { post: BlogPostDetail }) {
           </span>
 
           {/* Title */}
-          <h1 className="text-[42px] font-bold leading-[1.15] tracking-tight mb-5"
+          <h1 className="article-h1 text-[42px] font-bold leading-[1.15] tracking-tight mb-5"
             style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}>
             {post.title}
           </h1>
 
           {/* Subtitle / excerpt */}
-          <p className="text-[19px] leading-[1.65] mb-8 italic"
+          <p className="article-subtitle text-[19px] leading-[1.65] mb-8 italic"
             style={{ fontFamily: "var(--font-lora)", color: "var(--text2)" }}>
             {post.excerpt}
           </p>

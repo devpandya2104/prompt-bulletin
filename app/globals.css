@@ -67,3 +67,73 @@ select option:hover {
   color: var(--text);
 }
 
+/* ── Responsive layout ───────────────────────────────────────────── */
+
+/* Tablet: collapse sidebars, stack main grids */
+@media (max-width: 1024px) {
+  .tool-main-grid  { grid-template-columns: 1fr !important; }
+  .tool-sidebar-col { display: none !important; }
+  .blog-layout     { grid-template-columns: 1fr !important; }
+  .blog-sidebar    { display: none !important; }
+  .scores-grid     { grid-template-columns: 1fr !important; gap: 20px !important; }
+}
+
+/* Mobile: everything stacks, fonts scale down */
+@media (max-width: 768px) {
+  /* Blog page header */
+  .blog-page-header-inner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+  .blog-page-title  { font-size: 34px !important; }
+  .blog-search-bar  { width: 100% !important; min-width: unset !important; }
+
+  /* Featured post */
+  .featured-post-wrap   { padding: 24px 20px !important; min-height: unset !important; }
+  .featured-post-inner  { grid-template-columns: 1fr !important; }
+  .featured-post-upvote { display: none !important; }
+  .featured-post-title  { font-size: 22px !important; }
+
+  /* Blog article grids */
+  .blog-grid-2 { grid-template-columns: 1fr !important; }
+  .blog-grid-3 { grid-template-columns: 1fr !important; }
+
+  /* Tool hero */
+  .tool-hero-grid  { grid-template-columns: 1fr !important; }
+  .tool-action-card { min-width: unset !important; width: 100% !important; }
+  .tool-h1         { font-size: 26px !important; line-height: 1.15 !important; }
+
+  /* Section nav — horizontal scroll */
+  .section-nav-scroll {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .section-nav-scroll > div { min-width: max-content; }
+
+  /* Pros / Cons */
+  .pros-cons-grid { grid-template-columns: 1fr !important; }
+
+  /* Pricing — 2 cols max, scroll if more */
+  .pricing-grid-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+  .pricing-grid      { grid-template-columns: repeat(2, minmax(200px, 1fr)) !important; }
+
+  /* Feature table — horizontal scroll */
+  .feature-table-outer { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+  .feature-table-inner { min-width: 420px !important; }
+
+  /* Discover filter bar */
+  .discover-filter-bar { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
+  .discover-filter-bar > div { width: 100% !important; }
+  .discover-filter-bar select { width: 100% !important; }
+
+  /* Article page */
+  .article-h1       { font-size: 28px !important; line-height: 1.2 !important; }
+  .article-subtitle { font-size: 16px !important; }
+
+  /* Listicle page */
+  .listicle-h1      { font-size: 30px !important; line-height: 1.2 !important; }
+  .listicle-comparison-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+  .listicle-comparison      { min-width: 600px !important; }
+}
+

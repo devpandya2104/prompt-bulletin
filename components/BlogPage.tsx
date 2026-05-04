@@ -56,18 +56,18 @@ function FeaturedPost({ post }: { post: BlogPost }) {
   };
 
   return (
-    <Link href={`/blog/${post.slug}`} style={{ display: "block", textDecoration: "none", position: "relative", borderRadius: 20, overflow: "hidden", background: "var(--bg2)", border: "1px solid var(--border2)", minHeight: 340, padding: "40px 44px", transition: "border-color 0.2s, transform 0.2s" }}
+    <Link href={`/blog/${post.slug}`} className="featured-post-wrap" style={{ display: "block", textDecoration: "none", position: "relative", borderRadius: 20, overflow: "hidden", background: "var(--bg2)", border: "1px solid var(--border2)", minHeight: 340, padding: "40px 44px", transition: "border-color 0.2s, transform 0.2s" }}
       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `oklch(72% 0.19 ${hue})`; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border2)"; (e.currentTarget as HTMLElement).style.transform = "none"; }}>
       <CardPattern hue={hue} />
 
-      <div style={{ position: "relative", display: "grid", gridTemplateColumns: "1fr auto", gap: 40, alignItems: "flex-end" }}>
+      <div className="featured-post-inner" style={{ position: "relative", display: "grid", gridTemplateColumns: "1fr auto", gap: 40, alignItems: "flex-end" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
             <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 100, background: `oklch(72% 0.19 ${hue} / 0.18)`, color: `oklch(72% 0.19 ${hue})`, textTransform: "uppercase", letterSpacing: "0.06em" }}>{post.category}</span>
             <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 100, background: "rgba(255,255,255,0.08)", color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.06em" }}>✦ Featured</span>
           </div>
-          <h2 style={{ fontFamily: "var(--font-space)", fontSize: 34, fontWeight: 700, letterSpacing: "-0.04em", color: "var(--text)", lineHeight: 1.15, marginBottom: 16, maxWidth: 680 }}>{post.title}</h2>
+          <h2 className="featured-post-title" style={{ fontFamily: "var(--font-space)", fontSize: 34, fontWeight: 700, letterSpacing: "-0.04em", color: "var(--text)", lineHeight: 1.15, marginBottom: 16, maxWidth: 680 }}>{post.title}</h2>
           <p style={{ fontSize: 16, color: "var(--text2)", lineHeight: 1.7, maxWidth: 600, marginBottom: 28 }}>{post.excerpt}</p>
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -87,7 +87,7 @@ function FeaturedPost({ post }: { post: BlogPost }) {
         </div>
 
         {/* Upvote */}
-        <button onClick={handleUpvote} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "14px 16px", borderRadius: 14, background: upvoted ? `oklch(72% 0.19 ${hue} / 0.18)` : "rgba(255,255,255,0.06)", border: `1px solid ${upvoted ? `oklch(72% 0.19 ${hue})` : "rgba(255,255,255,0.15)"}`, cursor: "pointer", transition: "all 0.15s", flexShrink: 0 }}>
+        <button onClick={handleUpvote} className="featured-post-upvote" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "14px 16px", borderRadius: 14, background: upvoted ? `oklch(72% 0.19 ${hue} / 0.18)` : "rgba(255,255,255,0.06)", border: `1px solid ${upvoted ? `oklch(72% 0.19 ${hue})` : "rgba(255,255,255,0.15)"}`, cursor: "pointer", transition: "all 0.15s", flexShrink: 0 }}>
           <Icon name="arrowUp" size={18} color={upvoted ? `oklch(72% 0.19 ${hue})` : "var(--text2)"} />
           <span style={{ fontSize: 14, fontWeight: 700, fontFamily: "var(--font-space)", color: upvoted ? `oklch(72% 0.19 ${hue})` : "var(--text2)" }}>{fmt(count)}</span>
         </button>
@@ -211,18 +211,18 @@ export default function BlogPage({ posts }: { posts: BlogPost[] }) {
       <div style={{ paddingTop: 100, paddingBottom: 60, borderBottom: "1px solid var(--border)", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: -100, right: "10%", width: 500, height: 500, background: "radial-gradient(ellipse, oklch(72% 0.19 52 / 0.06) 0%, transparent 65%)", pointerEvents: "none" }} />
         <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 32, flexWrap: "wrap" }}>
+          <div className="blog-page-header-inner" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 32, flexWrap: "wrap" }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
                 <Icon name="rss" size={14} color="var(--accent)" />
                 <span style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.1em" }}>From the editors</span>
               </div>
-              <h1 style={{ fontFamily: "var(--font-space)", fontSize: 52, fontWeight: 700, letterSpacing: "-0.05em", color: "var(--text)", lineHeight: 1.05, margin: 0 }}>The Blog</h1>
+              <h1 className="blog-page-title" style={{ fontFamily: "var(--font-space)", fontSize: 52, fontWeight: 700, letterSpacing: "-0.05em", color: "var(--text)", lineHeight: 1.05, margin: 0 }}>The Blog</h1>
               <p style={{ fontSize: 17, color: "var(--text2)", marginTop: 10, maxWidth: 480 }}>Deep dives, roundups, and opinion from the PromptBulletin editorial team.</p>
             </div>
 
             {/* Search */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg3)", border: `1px solid ${focused ? "var(--accent)" : "var(--border2)"}`, borderRadius: 12, padding: "6px 6px 6px 16px", minWidth: 300, transition: "border-color 0.2s, box-shadow 0.2s", boxShadow: focused ? "0 0 0 3px oklch(72% 0.19 52 / 0.1)" : "none" }}>
+            <div className="blog-search-bar" style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg3)", border: `1px solid ${focused ? "var(--accent)" : "var(--border2)"}`, borderRadius: 12, padding: "6px 6px 6px 16px", minWidth: 300, transition: "border-color 0.2s, box-shadow 0.2s", boxShadow: focused ? "0 0 0 3px oklch(72% 0.19 52 / 0.1)" : "none" }}>
               <Icon name="search" size={16} color="var(--text3)" />
               <input value={query} onChange={e => setQuery(e.target.value)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
                 placeholder="Search articles…"
@@ -250,7 +250,7 @@ export default function BlogPage({ posts }: { posts: BlogPost[] }) {
         )}
 
         {/* Grid + Sidebar */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 40, paddingBottom: 80 }}>
+        <div className="blog-layout" style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 40, paddingBottom: 80 }}>
           {/* Articles */}
           <div>
             {remaining.length === 0 ? (
@@ -260,7 +260,7 @@ export default function BlogPage({ posts }: { posts: BlogPost[] }) {
             ) : (
               <>
                 {remaining.length >= 2 && (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, marginBottom: 16 }}>
+                  <div className="blog-grid-2" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, marginBottom: 16 }}>
                     {remaining.slice(0, 2).map(p => <PostCard key={p.id} post={p} large />)}
                   </div>
                 )}
@@ -270,7 +270,7 @@ export default function BlogPage({ posts }: { posts: BlogPost[] }) {
                   </div>
                 )}
                 {remaining.length > 2 && (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+                  <div className="blog-grid-3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
                     {remaining.slice(2).map(p => <PostCard key={p.id} post={p} />)}
                   </div>
                 )}
@@ -279,7 +279,7 @@ export default function BlogPage({ posts }: { posts: BlogPost[] }) {
           </div>
 
           {/* Sidebar */}
-          <aside style={{ display: "flex", flexDirection: "column" }}>
+          <aside className="blog-sidebar" style={{ display: "flex", flexDirection: "column" }}>
             <SidebarNewsletter />
 
             {/* Trending */}

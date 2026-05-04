@@ -138,7 +138,7 @@ function ToolHero({ tool, upvoted, setUpvoted, upvoteCount, setUpvoteCount, save
           <Icon name="arrowLeft" size={14} /> Back to directory
         </Link>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 40, alignItems: "flex-start" }}>
+        <div className="tool-hero-grid" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 40, alignItems: "flex-start" }}>
           {/* Identity */}
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 20 }}>
@@ -148,7 +148,7 @@ function ToolHero({ tool, upvoted, setUpvoted, upvoteCount, setUpvoteCount, save
               </div>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
-                  <h1 style={{ fontFamily: "var(--font-space)", fontSize: 36, fontWeight: 700, letterSpacing: "-0.04em", color: "var(--text)", lineHeight: 1, margin: 0 }}>{tool.name}</h1>
+                  <h1 className="tool-h1" style={{ fontFamily: "var(--font-space)", fontSize: 36, fontWeight: 700, letterSpacing: "-0.04em", color: "var(--text)", lineHeight: 1, margin: 0 }}>{tool.name}</h1>
                   {tool.tag && (
                     <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 100, background: "var(--accent-dim)", color: "var(--accent)", border: "1px solid oklch(72% 0.19 52 / 0.3)" }}>
                       ✦ {tool.tag}
@@ -181,7 +181,7 @@ function ToolHero({ tool, upvoted, setUpvoted, upvoteCount, setUpvoteCount, save
           </div>
 
           {/* Action card */}
-          <div style={{ background: "var(--bg2)", border: "1px solid var(--border2)", borderRadius: 18, padding: 24, minWidth: 260, display: "flex", flexDirection: "column", gap: 14 }}>
+          <div className="tool-action-card" style={{ background: "var(--bg2)", border: "1px solid var(--border2)", borderRadius: 18, padding: 24, minWidth: 260, display: "flex", flexDirection: "column", gap: 14 }}>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 4 }}>Starting from</div>
               <div style={{ fontFamily: "var(--font-space)", fontSize: 22, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.02em" }}>{tool.pricing}</div>
@@ -223,7 +223,7 @@ function ToolHero({ tool, upvoted, setUpvoted, upvoteCount, setUpvoteCount, save
         </div>
 
         {/* Tab nav */}
-        <div style={{ marginTop: 40, borderBottom: "1px solid var(--border)" }}>
+        <div className="section-nav-scroll" style={{ marginTop: 40, borderBottom: "1px solid var(--border)" }}>
           <SectionNav />
         </div>
       </div>
@@ -258,7 +258,7 @@ function Overview({ tool }: { tool: ToolDetail }) {
 function ProsCons({ tool }: { tool: ToolDetail }) {
   if (!tool.pros?.length && !tool.cons?.length) return null;
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+    <div className="pros-cons-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
       <div style={{ background: "var(--green-dim)", border: "1px solid oklch(72% 0.18 145 / 0.25)", borderRadius: 14, padding: "20px 22px" }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "var(--green)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>Pros</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
@@ -335,7 +335,7 @@ function Scores({ tool }: { tool: ToolDetail }) {
   return (
     <div id="section-scores">
       <h2 style={{ fontFamily: "var(--font-space)", fontSize: 22, fontWeight: 700, color: "var(--text)", marginBottom: 24, letterSpacing: "-0.02em" }}>Editorial Scores</h2>
-      <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "28px 48px", alignItems: "center" }}>
+      <div className="scores-grid" style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "28px 48px", alignItems: "center" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "28px 32px", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 16, gap: 8 }}>
           <div style={{ fontFamily: "var(--font-space)", fontSize: 64, fontWeight: 700, color: "var(--accent)", letterSpacing: "-0.05em", lineHeight: 1 }}>{tool.editor_rating || tool.rating}</div>
           <Stars rating={tool.editor_rating || tool.rating} size={16} />
@@ -355,7 +355,7 @@ function Pricing({ tool }: { tool: ToolDetail }) {
   return (
     <div id="section-pricing">
       <h2 style={{ fontFamily: "var(--font-space)", fontSize: 22, fontWeight: 700, color: "var(--text)", marginBottom: 24, letterSpacing: "-0.02em" }}>Pricing</h2>
-      <div style={{ display: "grid", gridTemplateColumns: `repeat(${tool.pricing_tiers.length}, 1fr)`, gap: 14 }}>
+      <div className="pricing-grid-wrap"><div className="pricing-grid" style={{ display: "grid", gridTemplateColumns: `repeat(${tool.pricing_tiers.length}, 1fr)`, gap: 14 }}>
         {tool.pricing_tiers.map(tier => (
           <div key={tier.name} style={{ background: tier.highlight ? "var(--bg2)" : "var(--bg3)", border: `1px solid ${tier.highlight ? "var(--accent)" : "var(--border)"}`, borderRadius: 16, padding: "24px 22px", position: "relative", overflow: "hidden", boxShadow: tier.highlight ? "0 0 40px oklch(72% 0.19 52 / 0.08)" : "none" }}>
             {tier.highlight && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "var(--accent)" }} />}
@@ -388,7 +388,7 @@ function Pricing({ tool }: { tool: ToolDetail }) {
             )}
           </div>
         ))}
-      </div>
+      </div></div>
     </div>
   );
 }
@@ -400,7 +400,7 @@ function FeatureTable({ tool }: { tool: ToolDetail }) {
   return (
     <div id="section-features">
       <h2 style={{ fontFamily: "var(--font-space)", fontSize: 22, fontWeight: 700, color: "var(--text)", marginBottom: 20, letterSpacing: "-0.02em" }}>Feature Breakdown</h2>
-      <div style={{ border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
+      <div className="feature-table-outer"><div className="feature-table-inner" style={{ border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 80px 80px 80px", background: "var(--bg3)", borderBottom: "1px solid var(--border)", padding: "10px 20px" }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Feature</span>
           {tiers.map(t => <span key={t} style={{ fontSize: 12, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em", textAlign: "center" }}>{t}</span>)}
@@ -423,7 +423,7 @@ function FeatureTable({ tool }: { tool: ToolDetail }) {
             })}
           </div>
         ))}
-      </div>
+      </div></div>
     </div>
   );
 }
@@ -665,7 +665,7 @@ export default function ToolDetailPage({ tool, reviews, related }: {
   return (
     <div>
       <ToolHero tool={tool} upvoted={upvoted} setUpvoted={setUpvoted} upvoteCount={upvoteCount} setUpvoteCount={setUpvoteCount} saved={saved} setSaved={setSaved} />
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "52px 24px 0", display: "grid", gridTemplateColumns: "1fr 340px", gap: 52 }}>
+      <div className="tool-main-grid" style={{ maxWidth: 1280, margin: "0 auto", padding: "52px 24px 0", display: "grid", gridTemplateColumns: "1fr 340px", gap: 52 }}>
         <main style={{ display: "flex", flexDirection: "column", gap: 52, minWidth: 0 }}>
           <Overview tool={tool} />
           <ProsCons tool={tool} />
@@ -675,7 +675,7 @@ export default function ToolDetailPage({ tool, reviews, related }: {
           <FeatureTable tool={tool} />
           <Reviews tool={tool} reviews={reviews} />
         </main>
-        <Sidebar tool={tool} related={related} />
+        <div className="tool-sidebar-col"><Sidebar tool={tool} related={related} /></div>
       </div>
     </div>
   );

@@ -58,7 +58,7 @@ export default function Discover({ tools, categories }: { tools: Tool[]; categor
           <h2 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}>Top-rated this month</h2>
         </div>
 
-        <div className="flex gap-3 mb-7 flex-wrap items-center justify-between">
+        <div className="discover-filter-bar flex gap-3 mb-7 flex-wrap items-center justify-between">
           <div className="flex gap-1 p-1 rounded-xl flex-wrap" style={{ background: "var(--bg3)" }}>
             {sorts.map((s) => (
               <button key={s.id} onClick={() => setSort(s.id)}

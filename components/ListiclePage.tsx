@@ -290,7 +290,7 @@ export default function ListiclePage({ post }: { post: BlogPostDetail }) {
             ))}
           </div>
 
-          <h1 className="text-[46px] font-black leading-[1.1] tracking-tight mb-5"
+          <h1 className="listicle-h1 text-[46px] font-black leading-[1.1] tracking-tight mb-5"
             style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}>
             {post.title}
           </h1>
