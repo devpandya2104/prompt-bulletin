@@ -101,6 +101,25 @@ export async function deleteCategory(id: string) {
   revalidatePath("/", "layout");
 }
 
+// ── Inbox actions ─────────────────────────────────────────────────
+
+export async function updateSubmission(id: string, status: string, adminNotes: string) {
+  const supabase = await createAdminClient();
+  const { error } = await supabase
+    .from("tool_submissions")
+    .update({ status, admin_notes: adminNotes })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/submissions");
+}
+
+export async function deleteNewsletterSubscriber(id: string) {
+  const supabase = await createAdminClient();
+  const { error } = await supabase.from("newsletter_subscribers").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/newsletter");
+}
+
 // ── Site config actions ────────────────────────────────────────────
 
 export async function saveSiteConfig(key: string, value: Record<string, unknown>) {
