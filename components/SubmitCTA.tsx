@@ -22,12 +22,17 @@ export default function SubmitCTA({ categories, config = DEFAULT_SUBMIT }: {
     if (!form.email) return;
     setLoading(true);
     setError("");
-    const supabase = createClient();
-    const { error: err } = await supabase.from("tool_submissions").insert({
-      name: form.name, url: form.url, category_id: form.category_id, submitter_email: form.email,
-    });
-    if (err) { setError("Something went wrong. Please try again."); } else { setSubmitted(true); }
-    setLoading(false);
+    try {
+      const supabase = createClient();
+      const { error: err } = await supabase.from("tool_submissions").insert({
+        name: form.name, url: form.url, category_id: form.category_id, submitter_email: form.email,
+      });
+      if (err) { setError(err.message); } else { setSubmitted(true); }
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputStyle: React.CSSProperties = {

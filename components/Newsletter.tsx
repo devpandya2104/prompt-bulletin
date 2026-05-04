@@ -14,16 +14,21 @@ export default function Newsletter({ config = DEFAULT_NEWSLETTER }: { config?: N
     if (!email) return;
     setLoading(true);
     setError("");
-    const supabase = createClient();
-    const { error: err } = await supabase.from("newsletter_subscribers").insert({ email });
-    if (err?.code === "23505") {
-      setError("You're already subscribed!");
-    } else if (err) {
-      setError("Something went wrong. Please try again.");
-    } else {
-      setDone(true);
+    try {
+      const supabase = createClient();
+      const { error: err } = await supabase.from("newsletter_subscribers").insert({ email });
+      if (err?.code === "23505") {
+        setError("You're already subscribed!");
+      } else if (err) {
+        setError(err.message);
+      } else {
+        setDone(true);
+      }
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
