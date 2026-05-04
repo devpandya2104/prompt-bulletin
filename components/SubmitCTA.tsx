@@ -2,15 +2,13 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Category } from "@/lib/queries";
+import type { SubmitConfig } from "@/lib/site-config";
+import { DEFAULT_SUBMIT } from "@/lib/site-config";
 
-const perks = [
-  "Free to list — always",
-  "Editorial review in 5 business days",
-  "Status updates via email",
-  "Update your listing at any time",
-];
-
-export default function SubmitCTA({ categories }: { categories: Category[] }) {
+export default function SubmitCTA({ categories, config = DEFAULT_SUBMIT }: {
+  categories: Category[];
+  config?: SubmitConfig;
+}) {
   const [step,      setStep]      = useState(0);
   const [form,      setForm]      = useState({ name: "", url: "", category_id: "", email: "" });
   const [submitted, setSubmitted] = useState(false);
@@ -26,24 +24,16 @@ export default function SubmitCTA({ categories }: { categories: Category[] }) {
     setError("");
     const supabase = createClient();
     const { error: err } = await supabase.from("tool_submissions").insert({
-      name:            form.name,
-      url:             form.url,
-      category_id:     form.category_id,
-      submitter_email: form.email,
+      name: form.name, url: form.url, category_id: form.category_id, submitter_email: form.email,
     });
-    if (err) {
-      setError("Something went wrong. Please try again.");
-    } else {
-      setSubmitted(true);
-    }
+    if (err) { setError("Something went wrong. Please try again."); } else { setSubmitted(true); }
     setLoading(false);
   };
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "12px 16px", borderRadius: 10,
     background: "rgba(255,255,255,0.05)", border: "1px solid var(--border2)",
-    color: "var(--text)", fontSize: 14, fontFamily: "var(--font-inter)", outline: "none",
-    transition: "border-color 0.2s",
+    color: "var(--text)", fontSize: 14, fontFamily: "var(--font-inter)", outline: "none", transition: "border-color 0.2s",
   };
   const labelStyle: React.CSSProperties = {
     fontSize: 12, fontWeight: 600, color: "var(--text2)",
@@ -54,15 +44,13 @@ export default function SubmitCTA({ categories }: { categories: Category[] }) {
     <section id="submit" className="py-20 px-6" style={{ borderTop: "1px solid var(--border)", background: "var(--bg2)" }}>
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20 items-center">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--accent)" }}>Submit your tool</p>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--accent)" }}>{config.eyebrow}</p>
           <h2 className="text-4xl font-bold tracking-tight leading-tight mb-4" style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}>
-            Built something great?<br />Get in front of 48K professionals.
+            {config.heading}<br />{config.subheading}
           </h2>
-          <p className="text-[15px] leading-[1.75] mb-7" style={{ color: "var(--text2)" }}>
-            Submit your AI tool and our editors will review it within 5 business days. Listings are free and always will be.
-          </p>
+          <p className="text-[15px] leading-[1.75] mb-7" style={{ color: "var(--text2)" }}>{config.description}</p>
           <div className="flex flex-col gap-3">
-            {perks.map((item) => (
+            {config.perks.map((item) => (
               <div key={item} className="flex items-center gap-2.5">
                 <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "var(--accent-dim)", border: "1px solid var(--accent)" }}>
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -97,20 +85,17 @@ export default function SubmitCTA({ categories }: { categories: Category[] }) {
                     style={{ background: s <= step ? "var(--accent)" : "var(--border2)" }} />
                 ))}
               </div>
-
               {step === 0 && (
                 <div className="flex flex-col gap-4">
                   <div>
                     <label style={labelStyle}>Tool name *</label>
                     <input value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="e.g. Perplexity AI" style={inputStyle}
-                      onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
-                      onBlur={(e)  => (e.target.style.borderColor = "var(--border2)")} />
+                      onFocus={(e) => (e.target.style.borderColor = "var(--accent)")} onBlur={(e) => (e.target.style.borderColor = "var(--border2)")} />
                   </div>
                   <div>
                     <label style={labelStyle}>Website URL *</label>
                     <input value={form.url} onChange={(e) => update("url", e.target.value)} placeholder="https://your-tool.com" style={inputStyle}
-                      onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
-                      onBlur={(e)  => (e.target.style.borderColor = "var(--border2)")} />
+                      onFocus={(e) => (e.target.style.borderColor = "var(--accent)")} onBlur={(e) => (e.target.style.borderColor = "var(--border2)")} />
                   </div>
                   <div>
                     <label style={labelStyle}>Category *</label>
@@ -126,7 +111,6 @@ export default function SubmitCTA({ categories }: { categories: Category[] }) {
                   </button>
                 </div>
               )}
-
               {step === 1 && (
                 <div className="flex flex-col gap-4">
                   <div className="p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)" }}>
@@ -136,8 +120,7 @@ export default function SubmitCTA({ categories }: { categories: Category[] }) {
                   <div>
                     <label style={labelStyle}>Your email *</label>
                     <input value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="you@company.com" type="email" style={inputStyle}
-                      onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
-                      onBlur={(e)  => (e.target.style.borderColor = "var(--border2)")} />
+                      onFocus={(e) => (e.target.style.borderColor = "var(--accent)")} onBlur={(e) => (e.target.style.borderColor = "var(--border2)")} />
                   </div>
                   {error && <p className="text-xs" style={{ color: "#ef4444" }}>{error}</p>}
                   <p className="text-xs leading-relaxed" style={{ color: "var(--text3)" }}>

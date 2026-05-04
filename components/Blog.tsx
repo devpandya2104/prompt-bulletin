@@ -1,17 +1,22 @@
 "use client";
 import type { BlogPost } from "@/lib/queries";
+import type { BlogSectionConfig } from "@/lib/site-config";
+import { DEFAULT_BLOG } from "@/lib/site-config";
 
-export default function Blog({ posts }: { posts: BlogPost[] }) {
+export default function Blog({ posts, config = DEFAULT_BLOG }: {
+  posts: BlogPost[];
+  config?: BlogSectionConfig;
+}) {
   return (
     <section id="blog" className="py-20 px-6" style={{ borderTop: "1px solid var(--border)" }}>
       <div className="max-w-7xl mx-auto">
         <div className="flex items-end justify-between mb-10 gap-4 flex-wrap">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--accent)" }}>From the editors</p>
-            <h2 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}>Latest articles</h2>
+            <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--accent)" }}>{config.eyebrow}</p>
+            <h2 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}>{config.heading}</h2>
           </div>
-          <a href="/blog" className="text-sm font-medium flex items-center gap-1 no-underline whitespace-nowrap" style={{ color: "var(--accent)" }}>
-            All articles
+          <a href={config.viewAllHref} className="text-sm font-medium flex items-center gap-1 no-underline whitespace-nowrap" style={{ color: "var(--accent)" }}>
+            {config.viewAllLabel}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </a>
         </div>
@@ -23,8 +28,7 @@ export default function Blog({ posts }: { posts: BlogPost[] }) {
               style={{ background: "var(--bg2)", border: "1px solid var(--border)" }}
               onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--border2)")}
               onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
-              onClick={() => window.location.href = `/blog/${post.slug}`}
-            >
+              onClick={() => window.location.href = `/blog/${post.slug}`}>
               <div className="h-40 flex items-center justify-center relative" style={{ background: "var(--bg3)", borderBottom: "1px solid var(--border)" }}>
                 {post.cover_image_url ? (
                   <img src={post.cover_image_url} alt={post.title} className="w-full h-full object-cover" />
@@ -35,12 +39,9 @@ export default function Blog({ posts }: { posts: BlogPost[] }) {
                   </>
                 )}
               </div>
-
               <div className="p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--accent-dim)", color: "var(--accent)" }}>
-                    {post.category}
-                  </span>
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--accent-dim)", color: "var(--accent)" }}>{post.category}</span>
                   <span className="text-xs" style={{ color: "var(--text3)" }}>{post.read_time} read</span>
                 </div>
                 <h3 className="text-base font-bold leading-snug mb-4" style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}>{post.title}</h3>

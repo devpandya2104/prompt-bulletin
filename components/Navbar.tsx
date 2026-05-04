@@ -4,33 +4,21 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import AuthModal from "./AuthModal";
 import type { User } from "@supabase/supabase-js";
+import type { NavbarConfig } from "@/lib/site-config";
+import { DEFAULT_NAVBAR } from "@/lib/site-config";
 
-const navLinks = [
-  { label: "Discover",      href: "/#discover" },
-  { label: "Categories",    href: "/#categories" },
-  { label: "Blog",          href: "/blog" },
-  { label: "About",         href: "/#about" },
-  { label: "Submit a Tool", href: "/#submit" },
-];
-
-export default function Navbar() {
-  const [scrolled,    setScrolled]    = useState(false);
-  const [mobileOpen,  setMobileOpen]  = useState(false);
-  const [showAuth,    setShowAuth]    = useState(false);
-  const [user,        setUser]        = useState<User | null>(null);
+export default function Navbar({ config = DEFAULT_NAVBAR }: { config?: NavbarConfig }) {
+  const [scrolled,   setScrolled]   = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [showAuth,   setShowAuth]   = useState(false);
+  const [user,       setUser]       = useState<User | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
-
-    // Listen for upvote-triggered auth opens
     const onOpenAuth = () => setShowAuth(true);
     window.addEventListener("open-auth", onOpenAuth);
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("open-auth", onOpenAuth);
-    };
+    return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("open-auth", onOpenAuth); };
   }, []);
 
   useEffect(() => {
@@ -50,41 +38,43 @@ export default function Navbar() {
 
   const initials = user?.email?.slice(0, 2).toUpperCase() ?? "";
 
+  // Split logo name: last word gets accent color
+  const words = config.logoName.split(/(?=[A-Z])/);
+  const logoFirst = words.slice(0, -1).join("") || config.logoName.slice(0, -1);
+  const logoAccent = words[words.length - 1] || config.logoName.slice(-1);
+
   return (
     <>
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
-
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 transition-all duration-300"
-        style={{
-          borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent",
-          background:   scrolled ? "rgba(10,10,11,0.92)"    : "transparent",
-          backdropFilter: scrolled ? "blur(16px)" : "none",
-        }}>
+        style={{ borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent", background: scrolled ? "rgba(10,10,11,0.92)" : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none" }}>
         <div className="max-w-7xl mx-auto h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 no-underline">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-black text-sm"
-              style={{ background: "var(--accent)", fontFamily: "var(--font-space)" }}>P</div>
+              style={{ background: "var(--accent)", fontFamily: "var(--font-space)" }}>
+              {config.logoName[0]}
+            </div>
             <span className="font-bold text-[17px] tracking-tight"
               style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}>
-              Prompt<span style={{ color: "var(--accent)" }}>Bulletin</span>
+              {logoFirst}<span style={{ color: "var(--accent)" }}>{logoAccent}</span>
             </span>
           </Link>
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <a key={link.label} href={link.href}
-                className="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 no-underline"
-                style={{
-                  color:  link.label === "Submit a Tool" ? "var(--accent)"  : "var(--text2)",
-                  border: link.label === "Submit a Tool" ? "1px solid var(--accent-dim)" : "1px solid transparent",
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = link.label === "Submit a Tool" ? "var(--accent)" : "var(--text2)"; e.currentTarget.style.background = "transparent"; }}>
-                {link.label}
-              </a>
-            ))}
+            {config.links.map((link) => {
+              const isCTA = link === config.links[config.links.length - 1];
+              return (
+                <a key={link.label} href={link.href}
+                  className="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 no-underline"
+                  style={{ color: isCTA ? "var(--accent)" : "var(--text2)", border: isCTA ? "1px solid var(--accent-dim)" : "1px solid transparent" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = isCTA ? "var(--accent)" : "var(--text2)"; e.currentTarget.style.background = "transparent"; }}>
+                  {link.label}
+                </a>
+              );
+            })}
           </div>
 
           {/* Auth area */}
@@ -92,16 +82,12 @@ export default function Navbar() {
             {user ? (
               <div className="hidden md:flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-                  style={{ background: "var(--accent-dim)", border: "1px solid var(--accent)", color: "var(--accent)" }}>
-                  {initials}
-                </div>
+                  style={{ background: "var(--accent-dim)", border: "1px solid var(--accent)", color: "var(--accent)" }}>{initials}</div>
                 <button onClick={handleSignOut}
                   className="px-4 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-all"
                   style={{ border: "1px solid var(--border2)", color: "var(--text2)", background: "transparent" }}
                   onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text2)"; }}>
-                  Sign out
-                </button>
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text2)"; }}>Sign out</button>
               </div>
             ) : (
               <>
@@ -120,8 +106,7 @@ export default function Navbar() {
               </>
             )}
             <button className="md:hidden p-1 bg-transparent border-0 cursor-pointer"
-              style={{ color: "var(--text2)" }}
-              onClick={() => setMobileOpen(!mobileOpen)}>
+              style={{ color: "var(--text2)" }} onClick={() => setMobileOpen(!mobileOpen)}>
               {mobileOpen ? (
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
               ) : (
@@ -134,7 +119,7 @@ export default function Navbar() {
         {/* Mobile menu */}
         {mobileOpen && (
           <div className="md:hidden px-6 pb-6 pt-0" style={{ background: "var(--bg2)", borderTop: "1px solid var(--border)" }}>
-            {navLinks.map((link) => (
+            {config.links.map((link) => (
               <a key={link.label} href={link.href} onClick={() => setMobileOpen(false)}
                 className="block py-3 text-[15px] font-medium no-underline"
                 style={{ borderBottom: "1px solid var(--border)", color: "var(--text)" }}>
@@ -144,9 +129,7 @@ export default function Navbar() {
             <div className="flex gap-2.5 mt-4">
               {user ? (
                 <button onClick={handleSignOut} className="flex-1 py-2.5 rounded-lg text-sm font-medium cursor-pointer"
-                  style={{ border: "1px solid var(--border2)", color: "var(--text2)", background: "transparent" }}>
-                  Sign out
-                </button>
+                  style={{ border: "1px solid var(--border2)", color: "var(--text2)", background: "transparent" }}>Sign out</button>
               ) : (
                 <>
                   <button onClick={() => { setMobileOpen(false); setShowAuth(true); }}

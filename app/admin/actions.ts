@@ -101,3 +101,14 @@ export async function deleteCategory(id: string) {
   revalidatePath("/", "layout");
 }
 
+// ── Site config actions ────────────────────────────────────────────
+
+export async function saveSiteConfig(key: string, value: Record<string, unknown>) {
+  const supabase = await createAdminClient();
+  const { error } = await supabase
+    .from("site_config")
+    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
+  if (error) throw new Error(error.message);
+  revalidatePath("/", "layout");
+}
+

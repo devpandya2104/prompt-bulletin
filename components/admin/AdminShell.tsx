@@ -2,10 +2,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const navItems = [
+const contentItems = [
   { label: "Tools",      href: "/admin/tools",      icon: "⚙" },
   { label: "Blog Posts", href: "/admin/blog",        icon: "✍" },
   { label: "Categories", href: "/admin/categories",  icon: "📂" },
+];
+
+const siteItems = [
+  { label: "Homepage",      href: "/admin/homepage",      icon: "🏠" },
+  { label: "Header & Footer", href: "/admin/header-footer", icon: "🔗" },
 ];
 
 function NavLink({ href, icon, label }: { href: string; icon: string; label: string }) {
@@ -52,7 +57,12 @@ export default function AdminShell({
 
         <nav style={{ padding: "12px 10px", flex: 1 }}>
           <p style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.1em", padding: "0 10px", marginBottom: 6 }}>Content</p>
-          {navItems.map((item) => (
+          {contentItems.map((item) => (
+            <NavLink key={item.href} {...item} />
+          ))}
+          <div style={{ margin: "12px 0 6px", borderTop: "1px solid var(--border)" }} />
+          <p style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.1em", padding: "6px 10px", marginBottom: 6 }}>Design</p>
+          {siteItems.map((item) => (
             <NavLink key={item.href} {...item} />
           ))}
           <div style={{ margin: "12px 0 6px", borderTop: "1px solid var(--border)" }} />

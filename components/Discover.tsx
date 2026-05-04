@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Tool, Category } from "@/lib/queries";
+import type { DiscoverConfig } from "@/lib/site-config";
+import { DEFAULT_DISCOVER } from "@/lib/site-config";
 import ToolCard from "./ToolCard";
 
 const sorts = [
@@ -11,7 +13,11 @@ const sorts = [
   { id: "newest",   label: "Newest" },
 ];
 
-export default function Discover({ tools, categories }: { tools: Tool[]; categories: Category[] }) {
+export default function Discover({ tools, categories, config = DEFAULT_DISCOVER }: {
+  tools: Tool[];
+  categories: Category[];
+  config?: DiscoverConfig;
+}) {
   const [sort,        setSort]        = useState("upvotes");
   const [filterCat,   setFilterCat]   = useState("all");
   const [filterPrice, setFilterPrice] = useState("all");
@@ -26,7 +32,6 @@ export default function Discover({ tools, categories }: { tools: Tool[]; categor
       setUserUpvotes(data?.map((u) => u.tool_id) ?? []);
     };
     loadUpvotes();
-
     const { data: { subscription } } = createClient().auth.onAuthStateChange(() => loadUpvotes());
     return () => subscription.unsubscribe();
   }, []);
@@ -40,7 +45,7 @@ export default function Discover({ tools, categories }: { tools: Tool[]; categor
     })
     .sort((a, b) => {
       if (sort === "rating")  return b.rating - a.rating;
-      if (sort === "newest")  return 0; // server already sorted
+      if (sort === "newest")  return 0;
       return b.upvote_count - a.upvote_count;
     });
 
@@ -54,8 +59,8 @@ export default function Discover({ tools, categories }: { tools: Tool[]; categor
     <section id="discover" className="py-20 px-6" style={{ background: "var(--bg)" }}>
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--accent)" }}>Featured tools</p>
-          <h2 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}>Top-rated this month</h2>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--accent)" }}>{config.eyebrow}</p>
+          <h2 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}>{config.heading}</h2>
         </div>
 
         <div className="discover-filter-bar flex gap-3 mb-7 flex-wrap items-center justify-between">
@@ -64,9 +69,9 @@ export default function Discover({ tools, categories }: { tools: Tool[]; categor
               <button key={s.id} onClick={() => setSort(s.id)}
                 className="px-3.5 py-1.5 rounded-lg text-[13px] font-medium cursor-pointer transition-all duration-150"
                 style={{
-                  background: sort === s.id ? "var(--bg2)"       : "transparent",
+                  background: sort === s.id ? "var(--bg2)" : "transparent",
                   border:     sort === s.id ? "1px solid var(--border2)" : "1px solid transparent",
-                  color:      sort === s.id ? "var(--text)"       : "var(--text2)",
+                  color:      sort === s.id ? "var(--text)" : "var(--text2)",
                   fontFamily: "var(--font-inter)",
                 }}>
                 {s.label}
