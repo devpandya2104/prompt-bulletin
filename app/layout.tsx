@@ -21,6 +21,7 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://promptbulletin.com"),
   title: "PromptBulletin — AI Tools & Website Reviews",
   description:
     "Discover the best AI tools through editorial reviews, community upvotes, and structured comparisons. Trusted by 48K+ professionals.",
@@ -29,6 +30,7 @@ export const metadata: Metadata = {
     title: "PromptBulletin — AI Tools & Website Reviews",
     description: "Editorial reviews, real upvotes, and structured comparisons for every AI tool.",
     type: "website",
+    url: "https://promptbulletin.com",
   },
 };
 
