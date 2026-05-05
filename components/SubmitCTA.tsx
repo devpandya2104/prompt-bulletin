@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { submitTool } from "@/app/admin/actions";
 import type { Category } from "@/lib/queries";
 import type { SubmitConfig } from "@/lib/site-config";
 import { DEFAULT_SUBMIT } from "@/lib/site-config";
@@ -23,11 +23,8 @@ export default function SubmitCTA({ categories, config = DEFAULT_SUBMIT }: {
     setLoading(true);
     setError("");
     try {
-      const supabase = createClient();
-      const { error: err } = await supabase.from("tool_submissions").insert({
-        name: form.name, url: form.url, category_id: form.category_id, submitter_email: form.email,
-      });
-      if (err) { setError(err.message); } else { setSubmitted(true); }
+      await submitTool({ name: form.name, url: form.url, category_id: form.category_id, submitter_email: form.email });
+      setSubmitted(true);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
     } finally {

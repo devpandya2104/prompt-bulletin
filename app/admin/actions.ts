@@ -101,6 +101,23 @@ export async function deleteCategory(id: string) {
   revalidatePath("/", "layout");
 }
 
+// ── Public submission actions (use admin client to bypass RLS) ─────
+
+export async function subscribeToNewsletter(email: string) {
+  const supabase = await createAdminClient();
+  const { error } = await supabase.from("newsletter_subscribers").insert({ email });
+  if (error?.code === "23505") throw new Error("already_subscribed");
+  if (error) throw new Error(error.message);
+}
+
+export async function submitTool(data: {
+  name: string; url: string; category_id: string; submitter_email: string;
+}) {
+  const supabase = await createAdminClient();
+  const { error } = await supabase.from("tool_submissions").insert(data);
+  if (error) throw new Error(error.message);
+}
+
 // ── Inbox actions ─────────────────────────────────────────────────
 
 export async function updateSubmission(id: string, status: string, adminNotes: string) {

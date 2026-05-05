@@ -59,18 +59,16 @@ function categoryColor(cat: string) {
 }
 
 // ── Tool item card ────────────────────────────────────────────────
-function ToolItemCard({ item, visible }: { item: ListItem; visible: boolean }) {
+function ToolItemCard({ item }: { item: ListItem }) {
   const rs = rankStyle(item.rank);
   return (
     <article
       id={`item-${item.rank}`}
-      className="rounded-2xl overflow-hidden transition-all duration-700"
+      className="rounded-2xl overflow-hidden"
       style={{
         background: "var(--bg2)",
         border: `1px solid var(--border)`,
         borderTop: `2px solid ${rs.color}`,
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(32px)",
       }}
     >
       <div className="p-6 sm:p-8 grid grid-cols-[auto_1fr] gap-6 sm:gap-8">
@@ -209,26 +207,20 @@ function ItemNavigator({ items, activeRank }: { items: ListItem[]; activeRank: n
 // ── Main component ────────────────────────────────────────────────
 export default function ListiclePage({ post }: { post: BlogPostDetail }) {
   const items = (post.list_items ?? []) as ListItem[];
-  const [activeRank,  setActiveRank]  = useState(items[0]?.rank ?? 1);
-  const [visibleItems, setVisibleItems] = useState<Set<number>>(new Set());
-  const [upvoted,      setUpvoted]     = useState(false);
+  const [activeRank, setActiveRank] = useState(items[0]?.rank ?? 1);
+  const [upvoted,    setUpvoted]    = useState(false);
   const [upvotes,      setUpvotes]     = useState(post.upvote_count);
   const [saved,        setSaved]       = useState(false);
   const [copied,       setCopied]      = useState(false);
 
-  // Scroll-in animation for tool cards
+  // Track active item in sticky nav while scrolling
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
     items.forEach((item) => {
       const el = document.getElementById(`item-${item.rank}`);
       if (!el) return;
       const obs = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setVisibleItems((prev) => new Set([...prev, item.rank]));
-            setActiveRank(item.rank);
-          }
-        },
+        ([entry]) => { if (entry.isIntersecting) setActiveRank(item.rank); },
         { rootMargin: "-10% 0px -60% 0px" }
       );
       obs.observe(el);
@@ -436,7 +428,7 @@ export default function ListiclePage({ post }: { post: BlogPostDetail }) {
       <section className="max-w-7xl mx-auto px-6 py-10">
         <div className="max-w-[820px] mx-auto space-y-8">
           {items.map((item) => (
-            <ToolItemCard key={item.rank} item={item} visible={visibleItems.has(item.rank)} />
+            <ToolItemCard key={item.rank} item={item} />
           ))}
         </div>
       </section>

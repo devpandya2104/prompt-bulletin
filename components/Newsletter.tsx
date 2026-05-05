@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { subscribeToNewsletter } from "@/app/admin/actions";
 import type { NewsletterConfig } from "@/lib/site-config";
 import { DEFAULT_NEWSLETTER } from "@/lib/site-config";
 
@@ -15,17 +15,11 @@ export default function Newsletter({ config = DEFAULT_NEWSLETTER }: { config?: N
     setLoading(true);
     setError("");
     try {
-      const supabase = createClient();
-      const { error: err } = await supabase.from("newsletter_subscribers").insert({ email });
-      if (err?.code === "23505") {
-        setError("You're already subscribed!");
-      } else if (err) {
-        setError(err.message);
-      } else {
-        setDone(true);
-      }
+      await subscribeToNewsletter(email);
+      setDone(true);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
+      const msg = e instanceof Error ? e.message : "";
+      setError(msg === "already_subscribed" ? "You're already subscribed!" : "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
