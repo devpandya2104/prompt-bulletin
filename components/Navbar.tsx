@@ -38,11 +38,6 @@ export default function Navbar({ config = DEFAULT_NAVBAR }: { config?: NavbarCon
 
   const initials = user?.email?.slice(0, 2).toUpperCase() ?? "";
 
-  // Split logo name: last word gets accent color
-  const words = config.logoName.split(/(?=[A-Z])/);
-  const logoFirst = words.slice(0, -1).join("") || config.logoName.slice(0, -1);
-  const logoAccent = words[words.length - 1] || config.logoName.slice(-1);
-
   return (
     <>
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
@@ -51,13 +46,14 @@ export default function Navbar({ config = DEFAULT_NAVBAR }: { config?: NavbarCon
         <div className="max-w-7xl mx-auto h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 no-underline">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-black text-sm"
-              style={{ background: "var(--accent)", fontFamily: "var(--font-space)" }}>
-              {config.logoName[0]}
-            </div>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L13.8 8.2L20 10L13.8 11.8L12 18L10.2 11.8L4 10L10.2 8.2L12 2Z" fill="var(--accent)"/>
+              <path d="M19 14L19.9 16.1L22 17L19.9 17.9L19 20L18.1 17.9L16 17L18.1 16.1L19 14Z" fill="var(--accent)" opacity="0.5"/>
+              <path d="M5 3L5.7 4.8L7.5 5.5L5.7 6.2L5 8L4.3 6.2L2.5 5.5L4.3 4.8L5 3Z" fill="var(--accent)" opacity="0.5"/>
+            </svg>
             <span className="font-bold text-[17px] tracking-tight"
               style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}>
-              {logoFirst}<span style={{ color: "var(--accent)" }}>{logoAccent}</span>
+              {config.logoName}
             </span>
           </Link>
 
