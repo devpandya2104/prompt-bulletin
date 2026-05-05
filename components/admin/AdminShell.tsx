@@ -18,6 +18,10 @@ const inboxItems = [
   { label: "Newsletter",       href: "/admin/newsletter",  icon: "✉" },
 ];
 
+const seoItems = [
+  { label: "SEO", href: "/admin/seo", icon: "🔍" },
+];
+
 function NavLink({ href, icon, label }: { href: string; icon: string; label: string }) {
   const pathname = usePathname();
   const active = pathname.startsWith(href);
@@ -73,6 +77,11 @@ export default function AdminShell({
           <div style={{ margin: "12px 0 6px", borderTop: "1px solid var(--border)" }} />
           <p style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.1em", padding: "6px 10px", marginBottom: 6 }}>Inbox</p>
           {inboxItems.map((item) => (
+            <NavLink key={item.href} {...item} />
+          ))}
+          <div style={{ margin: "12px 0 6px", borderTop: "1px solid var(--border)" }} />
+          <p style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.1em", padding: "6px 10px", marginBottom: 6 }}>SEO</p>
+          {seoItems.map((item) => (
             <NavLink key={item.href} {...item} />
           ))}
           <div style={{ margin: "12px 0 6px", borderTop: "1px solid var(--border)" }} />

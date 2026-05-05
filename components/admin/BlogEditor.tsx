@@ -503,6 +503,7 @@ type FormState = {
   author_role: string; author_bio: string;
   tags: string[]; related_tool_slug: string;
   body_blocks: BodyBlock[]; list_items: ListItem[];
+  seo_title: string; seo_description: string; seo_og_image: string;
 };
 
 function autoSlug(title: string) {
@@ -533,6 +534,9 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
     related_tool_slug: post?.related_tool_slug ?? "",
     body_blocks:    (post?.body_blocks     ?? []) as BodyBlock[],
     list_items:     (post?.list_items      ?? []) as ListItem[],
+    seo_title:       (post as Record<string, unknown>)?.seo_title       as string ?? "",
+    seo_description: (post as Record<string, unknown>)?.seo_description as string ?? "",
+    seo_og_image:    (post as Record<string, unknown>)?.seo_og_image    as string ?? "",
   });
 
   const upd = <K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -684,6 +688,36 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
           <ListItemsEditor items={form.list_items} onChange={(v) => upd("list_items", v)} />
         </div>
       )}
+
+      {/* ── SEO ── */}
+      <div style={sectionStyle}>
+        <p style={sectionTitle}>SEO</p>
+        <p style={{ fontSize: 12, color: "var(--text3)", marginTop: -12, marginBottom: 16 }}>
+          Leave blank to use auto-generated values (post title + excerpt).
+        </p>
+        <Field label="Meta title">
+          <Input value={form.seo_title} onChange={(v) => upd("seo_title", v)}
+            placeholder={`${form.title || "Post title"} — PromptBulletin`} />
+          <p style={{ fontSize: 11, color: form.seo_title.length > 60 ? "#ef4444" : "var(--text3)", margin: "4px 0 0" }}>
+            {form.seo_title.length}/60 characters
+          </p>
+        </Field>
+        <Field label="Meta description">
+          <Textarea value={form.seo_description} onChange={(v) => upd("seo_description", v)}
+            placeholder={form.excerpt || "Short description for search results…"} rows={3} />
+          <p style={{ fontSize: 11, color: form.seo_description.length > 160 ? "#ef4444" : "var(--text3)", margin: "4px 0 0" }}>
+            {form.seo_description.length}/160 characters
+          </p>
+        </Field>
+        <Field label="OG image URL">
+          <Input value={form.seo_og_image} onChange={(v) => upd("seo_og_image", v)}
+            placeholder="https://…/og-image.png (1200×630 recommended)" />
+        </Field>
+        {form.seo_og_image && (
+          <img src={form.seo_og_image} alt="OG preview"
+            style={{ maxWidth: 320, borderRadius: 8, border: "1px solid var(--border)", marginTop: 8 }} />
+        )}
+      </div>
 
       {/* Sticky save */}
       <div style={{ position: "sticky", bottom: 24, display: "flex", justifyContent: "flex-end", marginTop: 8 }}>

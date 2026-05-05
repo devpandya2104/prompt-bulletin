@@ -16,15 +16,24 @@ export async function generateMetadata(
   const supabase = await createClient();
   const { data } = await supabase
     .from("blog_posts")
-    .select("title, excerpt")
+    .select("title, excerpt, seo_title, seo_description, seo_og_image")
     .eq("slug", slug)
     .eq("is_published", true)
     .single();
 
   if (!data) return {};
+  const title       = data.seo_title       ?? `${data.title} — PromptBulletin`;
+  const description = data.seo_description ?? data.excerpt;
   return {
-    title: `${data.title} — PromptBulletin`,
-    description: data.excerpt,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      ...(data.seo_og_image ? { images: [{ url: data.seo_og_image }] } : {}),
+    },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 

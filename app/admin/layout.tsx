@@ -2,7 +2,10 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import AdminShell from "@/components/admin/AdminShell";
 
-export const metadata = { title: "Admin — PromptBulletin" };
+export const metadata = {
+  title: "Admin — PromptBulletin",
+  robots: { index: false, follow: false },
+};
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();

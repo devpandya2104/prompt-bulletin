@@ -427,6 +427,7 @@ type FormState = {
   best_for: string[]; pros: string[]; cons: string[];
   scores: ToolScore[]; screenshots: Screenshot[];
   pricing_tiers: PricingTier[]; tool_features: ToolFeature[];
+  seo_title: string; seo_description: string; seo_og_image: string;
 };
 
 const PLATFORMS = ["Web", "iOS", "Android", "Mac", "Win", "Linux", "API", "Discord"];
@@ -470,6 +471,9 @@ export default function ToolEditor({
     screenshots:   tool?.screenshots   ?? [],
     pricing_tiers: tool?.pricing_tiers ?? [],
     tool_features: tool?.tool_features ?? [],
+    seo_title:       (tool as Record<string, unknown>)?.seo_title       as string ?? "",
+    seo_description: (tool as Record<string, unknown>)?.seo_description as string ?? "",
+    seo_og_image:    (tool as Record<string, unknown>)?.seo_og_image    as string ?? "",
   });
 
   const upd = <K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -709,6 +713,36 @@ export default function ToolEditor({
 
       {/* ── Section: Reviews ── */}
       {tool && <ReviewsPanel toolId={tool.id} initialReviews={reviews} />}
+
+      {/* ── Section: SEO ── */}
+      <div style={sectionStyle}>
+        <p style={sectionTitleStyle}>SEO</p>
+        <p style={{ fontSize: 12, color: "var(--text3)", marginTop: -12, marginBottom: 16 }}>
+          Leave blank to use auto-generated values (tool name + tagline).
+        </p>
+        <Field label="Meta title">
+          <StyledInput value={form.seo_title} onChange={(v) => upd("seo_title", v)}
+            placeholder={`${form.name} Review — PromptBulletin`} />
+          <p style={{ fontSize: 11, color: form.seo_title.length > 60 ? "#ef4444" : "var(--text3)", margin: "4px 0 0" }}>
+            {form.seo_title.length}/60 characters
+          </p>
+        </Field>
+        <Field label="Meta description">
+          <StyledTextarea value={form.seo_description} onChange={(v) => upd("seo_description", v)}
+            placeholder={form.tagline || "Short description for search results…"} rows={3} />
+          <p style={{ fontSize: 11, color: form.seo_description.length > 160 ? "#ef4444" : "var(--text3)", margin: "4px 0 0" }}>
+            {form.seo_description.length}/160 characters
+          </p>
+        </Field>
+        <Field label="OG image URL">
+          <StyledInput value={form.seo_og_image} onChange={(v) => upd("seo_og_image", v)}
+            placeholder="https://…/og-image.png (1200×630 recommended)" />
+        </Field>
+        {form.seo_og_image && (
+          <img src={form.seo_og_image} alt="OG preview"
+            style={{ maxWidth: 320, borderRadius: 8, border: "1px solid var(--border)", marginTop: 8 }} />
+        )}
+      </div>
 
       {/* Sticky bottom save */}
       <div style={{ position: "sticky", bottom: 24, display: "flex", justifyContent: "flex-end", marginTop: 8 }}>

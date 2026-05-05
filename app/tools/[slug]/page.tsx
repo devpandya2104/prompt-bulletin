@@ -10,11 +10,23 @@ export const revalidate = 60;
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const supabase = await createClient();
-  const { data } = await supabase.from("tools").select("name, tagline, description").eq("slug", slug).single();
+  const { data } = await supabase
+    .from("tools")
+    .select("name, tagline, description, seo_title, seo_description, seo_og_image")
+    .eq("slug", slug)
+    .single();
   if (!data) return {};
+  const title       = data.seo_title       ?? `${data.name} Review — PromptBulletin`;
+  const description = data.seo_description ?? data.tagline ?? data.description;
   return {
-    title: `${data.name} Review — PromptBulletin`,
-    description: data.tagline ?? data.description,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      ...(data.seo_og_image ? { images: [{ url: data.seo_og_image }] } : {}),
+    },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 

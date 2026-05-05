@@ -78,6 +78,12 @@ export type FooterConfig = {
   legalLinks: { label: string; href: string }[];
 };
 
+export type SeoSystemConfig = {
+  noindexPaths: string[];
+  siteOgImage: string;
+  twitterHandle: string;
+};
+
 export type SiteConfig = {
   hero: HeroConfig;
   discover: DiscoverConfig;
@@ -90,6 +96,7 @@ export type SiteConfig = {
   newsletter: NewsletterConfig;
   navbar: NavbarConfig;
   footer: FooterConfig;
+  seo_system: SeoSystemConfig;
 };
 
 // ── Defaults ──────────────────────────────────────────────────────────────────
@@ -218,6 +225,12 @@ export const DEFAULT_FOOTER: FooterConfig = {
   ],
 };
 
+export const DEFAULT_SEO_SYSTEM: SeoSystemConfig = {
+  noindexPaths: [],
+  siteOgImage: "",
+  twitterHandle: "",
+};
+
 export const DEFAULT_CONFIG: SiteConfig = {
   hero: DEFAULT_HERO,
   discover: DEFAULT_DISCOVER,
@@ -230,5 +243,6 @@ export const DEFAULT_CONFIG: SiteConfig = {
   newsletter: DEFAULT_NEWSLETTER,
   navbar: DEFAULT_NAVBAR,
   footer: DEFAULT_FOOTER,
+  seo_system: DEFAULT_SEO_SYSTEM,
 };
 
