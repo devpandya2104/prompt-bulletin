@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { submitReview } from "@/lib/queries";
+import { toggleHelpfulVote } from "@/app/actions";
 import type { ToolDetail, ToolReview, Tool } from "@/lib/queries";
 
 // ── Icons ────────────────────────────────────────────────────────────────────
@@ -431,6 +432,10 @@ function FeatureTable({ tool }: { tool: ToolDetail }) {
 // ── Reviews ───────────────────────────────────────────────────────────────────
 function Reviews({ tool, reviews }: { tool: ToolDetail; reviews: ToolReview[] }) {
   const [helpful, setHelpful] = useState<Record<string, boolean>>({});
+  const [counts,  setCounts]  = useState<Record<string, number>>(() =>
+    Object.fromEntries(reviews.map(r => [r.id, r.helpful_count]))
+  );
+  const [toggling, setToggling] = useState<Record<string, boolean>>({});
   const [showForm, setShowForm] = useState(false);
   const [text, setText] = useState("");
   const [name, setName] = useState("");
@@ -439,6 +444,36 @@ function Reviews({ tool, reviews }: { tool: ToolDetail; reviews: ToolReview[] })
   const [hoverRating, setHoverRating] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    const loadVotes = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const reviewIds = reviews.map(r => r.id);
+      if (!reviewIds.length) return;
+      const { data } = await supabase.from("review_helpful_votes").select("review_id").in("review_id", reviewIds).eq("user_id", user.id);
+      if (data) setHelpful(Object.fromEntries(data.map(v => [v.review_id, true])));
+    };
+    loadVotes();
+    const { data: { subscription } } = createClient().auth.onAuthStateChange(() => loadVotes());
+    return () => subscription.unsubscribe();
+  }, [reviews]);
+
+  const handleHelpful = async (reviewId: string) => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { window.dispatchEvent(new CustomEvent("open-auth")); return; }
+    if (toggling[reviewId]) return;
+    setToggling(prev => ({ ...prev, [reviewId]: true }));
+    try {
+      const { helpful: isHelpful, count } = await toggleHelpfulVote(reviewId);
+      setHelpful(prev => ({ ...prev, [reviewId]: isHelpful }));
+      setCounts(prev => ({ ...prev, [reviewId]: count }));
+    } finally {
+      setToggling(prev => ({ ...prev, [reviewId]: false }));
+    }
+  };
 
   const handleSubmit = async () => {
     if (!text || !userRating || !name) return;
@@ -546,9 +581,9 @@ function Reviews({ tool, reviews }: { tool: ToolDetail; reviews: ToolReview[] })
                 <Stars rating={r.rating} size={13} />
               </div>
               <p style={{ fontSize: 14, color: "var(--text2)", lineHeight: 1.7, marginBottom: 14, marginTop: 0 }}>{r.review_text}</p>
-              <button onClick={() => setHelpful(prev => ({ ...prev, [r.id]: !prev[r.id] }))} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 8, background: helpful[r.id] ? "var(--accent-dim)" : "rgba(255,255,255,0.04)", border: `1px solid ${helpful[r.id] ? "oklch(72% 0.19 52 / 0.3)" : "var(--border)"}`, color: helpful[r.id] ? "var(--accent)" : "var(--text3)", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-inter)", transition: "all 0.15s" }}>
+              <button onClick={() => handleHelpful(r.id)} disabled={toggling[r.id]} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 8, background: helpful[r.id] ? "var(--accent-dim)" : "rgba(255,255,255,0.04)", border: `1px solid ${helpful[r.id] ? "oklch(72% 0.19 52 / 0.3)" : "var(--border)"}`, color: helpful[r.id] ? "var(--accent)" : "var(--text3)", fontSize: 12, fontWeight: 500, cursor: toggling[r.id] ? "default" : "pointer", fontFamily: "var(--font-inter)", transition: "all 0.15s", opacity: toggling[r.id] ? 0.6 : 1 }}>
                 <Icon name="thumb" size={12} color={helpful[r.id] ? "var(--accent)" : "var(--text3)"} />
-                Helpful ({helpful[r.id] ? r.helpful_count + 1 : r.helpful_count})
+                Helpful ({counts[r.id] ?? r.helpful_count})
               </button>
             </div>
           ))}

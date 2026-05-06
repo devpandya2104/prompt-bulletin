@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter, Lora } from "next/font/google";
 import "./globals.css";
+import EmailConfirmBanner from "@/components/EmailConfirmBanner";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -43,6 +44,7 @@ export default function RootLayout({
     <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable} ${lora.variable}`}>
       <body className="min-h-screen" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
         {children}
+        <EmailConfirmBanner />
       </body>
     </html>
   );

@@ -137,6 +137,15 @@ export async function deleteNewsletterSubscriber(id: string) {
   revalidatePath("/admin/newsletter");
 }
 
+// ── Team / role actions ────────────────────────────────────────────
+
+export async function updateUserRole(userId: string, role: string) {
+  if (!["user", "editor", "admin"].includes(role)) throw new Error("Invalid role");
+  const supabase = await createAdminClient();
+  const { error } = await supabase.from("profiles").update({ role }).eq("id", userId);
+  if (error) throw new Error(error.message);
+}
+
 // ── Site config actions ────────────────────────────────────────────
 
 export async function saveSiteConfig(key: string, value: Record<string, unknown>) {

@@ -49,6 +49,7 @@ export type Tool = {
   name: string;
   slug: string;
   description: string;
+  tagline?: string | null;
   category_id: string | null;
   pricing: string;
   website_url: string | null;

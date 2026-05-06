@@ -11,18 +11,36 @@ export const metadata = {
   description: "Deep dives, roundups, and opinion from the PromptBulletin editorial team.",
 };
 
-export default async function BlogIndexPage() {
+const PER_PAGE = 9;
+
+export default async function BlogIndexPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10));
+  const from = (page - 1) * PER_PAGE;
+  const to   = from + PER_PAGE - 1;
+
   const supabase = await createClient();
-  const { data: posts } = await supabase
+  const { data: posts, count } = await supabase
     .from("blog_posts")
-    .select("*")
+    .select("*", { count: "exact" })
     .eq("is_published", true)
-    .order("published_at", { ascending: false });
+    .order("published_at", { ascending: false })
+    .range(from, to);
+
+  const totalPages = Math.ceil((count ?? 0) / PER_PAGE);
 
   return (
     <>
       <Navbar />
-      <BlogPage posts={(posts ?? []) as BlogPost[]} />
+      <BlogPage
+        posts={(posts ?? []) as BlogPost[]}
+        currentPage={page}
+        totalPages={totalPages}
+      />
       <Footer />
     </>
   );

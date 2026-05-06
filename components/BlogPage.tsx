@@ -192,7 +192,7 @@ function SidebarNewsletter() {
 const CATEGORIES = ["All", "Deep Dive", "Roundup", "Guide", "News", "Opinion"];
 const TOPICS = ["Writing", "Code", "Image Gen", "Video", "Research", "Productivity", "Opinion", "News", "Roundup", "Guide"];
 
-export default function BlogPage({ posts }: { posts: BlogPost[] }) {
+export default function BlogPage({ posts, currentPage = 1, totalPages = 1 }: { posts: BlogPost[]; currentPage?: number; totalPages?: number }) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
@@ -277,6 +277,27 @@ export default function BlogPage({ posts }: { posts: BlogPost[] }) {
               </>
             )}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 32, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
+              {currentPage > 1 && (
+                <a href={`/blog?page=${currentPage - 1}`}
+                  style={{ padding: "8px 18px", borderRadius: 9, border: "1px solid var(--border2)", color: "var(--text2)", textDecoration: "none", fontSize: 13, fontWeight: 500 }}>
+                  ← Previous
+                </a>
+              )}
+              <span style={{ fontSize: 13, color: "var(--text3)", padding: "0 8px" }}>
+                Page {currentPage} of {totalPages}
+              </span>
+              {currentPage < totalPages && (
+                <a href={`/blog?page=${currentPage + 1}`}
+                  style={{ padding: "8px 18px", borderRadius: 9, background: "var(--accent)", color: "#000", textDecoration: "none", fontSize: 13, fontWeight: 700 }}>
+                  Next →
+                </a>
+              )}
+            </div>
+          )}
 
           {/* Sidebar */}
           <aside className="blog-sidebar" style={{ display: "flex", flexDirection: "column" }}>

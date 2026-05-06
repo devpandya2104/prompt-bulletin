@@ -21,6 +21,7 @@ export default function Discover({ tools, categories, config = DEFAULT_DISCOVER 
   const [sort,        setSort]        = useState("upvotes");
   const [filterCat,   setFilterCat]   = useState("all");
   const [filterPrice, setFilterPrice] = useState("all");
+  const [query,       setQuery]       = useState("");
   const [userUpvotes, setUserUpvotes] = useState<string[]>([]);
 
   useEffect(() => {
@@ -37,7 +38,16 @@ export default function Discover({ tools, categories, config = DEFAULT_DISCOVER 
   }, []);
 
   const filtered = tools
-    .filter((t) => filterCat === "all" || (t.categories as any)?.slug === filterCat)
+    .filter((t) => {
+      if (!query.trim()) return true;
+      const q = query.toLowerCase();
+      return (
+        t.name.toLowerCase().includes(q) ||
+        t.tagline?.toLowerCase().includes(q) ||
+        (t.categories as { name?: string } | null)?.name?.toLowerCase().includes(q)
+      );
+    })
+    .filter((t) => filterCat === "all" || (t.categories as { slug?: string } | null)?.slug === filterCat)
     .filter((t) => {
       if (filterPrice === "free") return t.pricing.toLowerCase().includes("free");
       if (filterPrice === "paid") return !t.pricing.toLowerCase().startsWith("free");
@@ -61,6 +71,25 @@ export default function Discover({ tools, categories, config = DEFAULT_DISCOVER 
         <div className="mb-8">
           <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--accent)" }}>{config.eyebrow}</p>
           <h2 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "var(--font-space)", color: "var(--text)" }}>{config.heading}</h2>
+        </div>
+
+        {/* Search */}
+        <div className="relative mb-4">
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search tools by name, category, or use case…"
+            className="w-full pl-10 pr-4 py-3 rounded-xl text-sm"
+            style={{ background: "var(--bg2)", border: "1px solid var(--border2)", color: "var(--text)", fontFamily: "var(--font-inter)", outline: "none" }}
+            onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
+            onBlur={(e)  => (e.target.style.borderColor = "var(--border2)")}
+          />
+          {query && (
+            <button onClick={() => setQuery("")} className="absolute right-3.5 top-1/2 -translate-y-1/2" style={{ background: "none", border: "none", color: "var(--text3)", cursor: "pointer", fontSize: 18, lineHeight: 1 }}>×</button>
+          )}
         </div>
 
         <div className="discover-filter-bar flex gap-3 mb-7 flex-wrap items-center justify-between">
@@ -91,9 +120,16 @@ export default function Discover({ tools, categories, config = DEFAULT_DISCOVER 
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((tool) => <ToolCard key={tool.id} tool={tool} userUpvotes={userUpvotes} />)}
-        </div>
+        {filtered.length === 0 ? (
+          <div className="text-center py-20" style={{ color: "var(--text3)" }}>
+            <p className="text-lg font-semibold mb-2" style={{ color: "var(--text2)" }}>No tools found</p>
+            <p className="text-sm">Try a different search term or clear your filters.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.map((tool) => <ToolCard key={tool.id} tool={tool} userUpvotes={userUpvotes} />)}
+          </div>
+        )}
 
         <div className="text-center mt-10">
           <button className="px-8 py-3 rounded-xl text-sm font-medium cursor-pointer transition-all duration-150"

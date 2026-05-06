@@ -2,6 +2,7 @@
 import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { saveTool, createTool, saveReview, deleteReview } from "@/app/admin/actions";
+import ImageUpload from "./ImageUpload";
 import type { ToolDetail, ToolReview, ToolScore, ToolFeature, PricingTier, Screenshot } from "@/lib/queries";
 
 // ── Shared styles ─────────────────────────────────────────────────
@@ -734,14 +735,8 @@ export default function ToolEditor({
             {form.seo_description.length}/160 characters
           </p>
         </Field>
-        <Field label="OG image URL">
-          <StyledInput value={form.seo_og_image} onChange={(v) => upd("seo_og_image", v)}
-            placeholder="https://…/og-image.png (1200×630 recommended)" />
-        </Field>
-        {form.seo_og_image && (
-          <img src={form.seo_og_image} alt="OG preview"
-            style={{ maxWidth: 320, borderRadius: 8, border: "1px solid var(--border)", marginTop: 8 }} />
-        )}
+        <ImageUpload value={form.seo_og_image} onChange={(v) => upd("seo_og_image", v)}
+          folder="tools/og" label="OG image (1200×630 recommended)" />
       </div>
 
       {/* Sticky bottom save */}

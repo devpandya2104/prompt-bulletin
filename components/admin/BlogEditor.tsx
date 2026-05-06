@@ -2,6 +2,7 @@
 import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { saveBlogPost, createBlogPost } from "@/app/admin/actions";
+import ImageUpload from "./ImageUpload";
 import type { BlogPostDetail, BodyBlock, ListItem } from "@/lib/queries";
 
 // ── Shared styles ─────────────────────────────────────────────────
@@ -624,8 +625,9 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
             <Select value={form.post_type} onChange={(v) => upd("post_type", v as "article" | "listicle")}
               options={[{ value: "article", label: "Article (TOC + body blocks)" }, { value: "listicle", label: "Listicle (ranked tool list)" }]} />
           </Field>
-          <Field label="Cover image URL (optional)">
-            <Input value={form.cover_image_url} placeholder="https://…" onChange={(v) => upd("cover_image_url", v)} />
+          <Field label="Cover image (optional)">
+            <ImageUpload value={form.cover_image_url} onChange={(v) => upd("cover_image_url", v)}
+              folder="blog/covers" label="" />
           </Field>
         </Row>
       </div>
@@ -709,14 +711,8 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
             {form.seo_description.length}/160 characters
           </p>
         </Field>
-        <Field label="OG image URL">
-          <Input value={form.seo_og_image} onChange={(v) => upd("seo_og_image", v)}
-            placeholder="https://…/og-image.png (1200×630 recommended)" />
-        </Field>
-        {form.seo_og_image && (
-          <img src={form.seo_og_image} alt="OG preview"
-            style={{ maxWidth: 320, borderRadius: 8, border: "1px solid var(--border)", marginTop: 8 }} />
-        )}
+        <ImageUpload value={form.seo_og_image} onChange={(v) => upd("seo_og_image", v)}
+          folder="blog/og" label="OG image (1200×630 recommended)" />
       </div>
 
       {/* Sticky save */}
