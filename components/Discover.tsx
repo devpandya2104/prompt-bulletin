@@ -37,6 +37,14 @@ export default function Discover({ tools, categories, config = DEFAULT_DISCOVER 
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const onHeroSearch = (e: Event) => {
+      setQuery((e as CustomEvent<{ query: string }>).detail.query);
+    };
+    window.addEventListener("hero-search", onHeroSearch);
+    return () => window.removeEventListener("hero-search", onHeroSearch);
+  }, []);
+
   const filtered = tools
     .filter((t) => {
       if (!query.trim()) return true;

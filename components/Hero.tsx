@@ -7,6 +7,11 @@ export default function Hero({ config = DEFAULT_HERO }: { config?: HeroConfig })
   const [query,     setQuery]     = useState("");
   const [isFocused, setIsFocused] = useState(false);
 
+  const triggerSearch = (q: string) => {
+    window.dispatchEvent(new CustomEvent("hero-search", { detail: { query: q } }));
+    document.getElementById("discover")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <section className="pt-36 pb-24 text-center relative overflow-hidden">
       <div className="absolute pointer-events-none" style={{ top: -80, left: "50%", transform: "translateX(-50%)", width: 800, height: 500, background: "radial-gradient(ellipse at center, oklch(72% 0.19 52 / 0.08) 0%, transparent 70%)" }} />
@@ -36,10 +41,12 @@ export default function Hero({ config = DEFAULT_HERO }: { config?: HeroConfig })
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           <input value={query} onChange={(e) => setQuery(e.target.value)}
             onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)}
+            onKeyDown={(e) => { if (e.key === "Enter") triggerSearch(query); }}
             placeholder={config.searchPlaceholder}
             className="flex-1 bg-transparent border-0 outline-none text-[15px] py-2.5"
             style={{ color: "var(--text)", fontFamily: "var(--font-inter)" }} />
-          <button className="px-5 py-2.5 rounded-xl text-sm font-semibold cursor-pointer transition-opacity hover:opacity-85"
+          <button onClick={() => triggerSearch(query)}
+            className="px-5 py-2.5 rounded-xl text-sm font-semibold cursor-pointer transition-opacity hover:opacity-85"
             style={{ background: "var(--accent)", color: "#000", border: "none" }}>
             Search
           </button>
@@ -48,7 +55,7 @@ export default function Hero({ config = DEFAULT_HERO }: { config?: HeroConfig })
         {/* Quick filters */}
         <div className="flex gap-2.5 justify-center flex-wrap mb-14">
           {config.quickFilters.map((tag) => (
-            <button key={tag}
+            <button key={tag} onClick={() => { setQuery(tag); triggerSearch(tag); }}
               className="px-4 py-1.5 rounded-full text-[13px] font-medium cursor-pointer transition-all duration-150"
               style={{ background: "transparent", border: "1px solid var(--border2)", color: "var(--text2)" }}
               onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)"; }}
