@@ -69,6 +69,7 @@ function ToolItemCard({ item }: { item: ListItem }) {
         background: "var(--bg2)",
         border: `1px solid var(--border)`,
         borderTop: `2px solid ${rs.color}`,
+        scrollMarginTop: "9rem",
       }}
     >
       <div className="p-6 sm:p-8 grid grid-cols-[auto_1fr] gap-6 sm:gap-8">
@@ -373,7 +374,7 @@ export default function ListiclePage({ post }: { post: BlogPostDetail }) {
 
       {/* Quick comparison table */}
       {items.length > 0 && (
-        <section className="max-w-7xl mx-auto px-6 pt-10">
+        <section className="max-w-7xl mx-auto px-6 pt-10 pb-10">
           <div className="max-w-[820px] mx-auto">
             <h2 className="text-lg font-bold mb-4" style={{ color: "var(--text)", fontFamily: "var(--font-space)" }}>
               Quick Comparison

@@ -428,7 +428,8 @@ type FormState = {
   best_for: string[]; pros: string[]; cons: string[];
   scores: ToolScore[]; screenshots: Screenshot[];
   pricing_tiers: PricingTier[]; tool_features: ToolFeature[];
-  seo_title: string; seo_description: string; seo_og_image: string;
+  logo_url: string;
+  seo_title: string; seo_description: string; seo_og_image: string; canonical_url: string;
 };
 
 const PLATFORMS = ["Web", "iOS", "Android", "Mac", "Win", "Linux", "API", "Discord"];
@@ -472,9 +473,11 @@ export default function ToolEditor({
     screenshots:   tool?.screenshots   ?? [],
     pricing_tiers: tool?.pricing_tiers ?? [],
     tool_features: tool?.tool_features ?? [],
+    logo_url:        (tool as Record<string, unknown>)?.logo_url        as string ?? "",
     seo_title:       (tool as Record<string, unknown>)?.seo_title       as string ?? "",
     seo_description: (tool as Record<string, unknown>)?.seo_description as string ?? "",
     seo_og_image:    (tool as Record<string, unknown>)?.seo_og_image    as string ?? "",
+    canonical_url:   (tool as Record<string, unknown>)?.canonical_url   as string ?? "",
   });
 
   const upd = <K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -555,7 +558,14 @@ export default function ToolEditor({
 
       {/* ── Section: Basic Info ── */}
       <div style={sectionStyle}>
-        <p style={sectionTitleStyle}>Basic Information</p>
+        <div style={{ ...sectionTitleStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span>Basic Information</span>
+          {tool && (tool as unknown as { updated_at?: string }).updated_at ? (
+            <span style={{ fontSize: 11, fontWeight: 400, color: "var(--text3)" }}>
+              Last saved: {new Date((tool as unknown as { updated_at: string }).updated_at).toLocaleString()}
+            </span>
+          ) : null}
+        </div>
         <Row>
           <Field label="Tool Name">
             <StyledInput value={form.name} onChange={(v) => { upd("name", v); if (!tool) upd("slug", autoSlug(v)); }} placeholder="e.g. Perplexity AI" />
@@ -564,9 +574,15 @@ export default function ToolEditor({
             <StyledInput value={form.slug} onChange={(v) => upd("slug", v)} placeholder="e.g. perplexity-ai" />
           </Field>
         </Row>
-        <Field label="Tagline (short)">
-          <StyledInput value={form.tagline} onChange={(v) => upd("tagline", v)} placeholder="The AI answer engine for the web" />
-        </Field>
+        <Row>
+          <Field label="Tagline (short)">
+            <StyledInput value={form.tagline} onChange={(v) => upd("tagline", v)} placeholder="The AI answer engine for the web" />
+          </Field>
+          <div>
+            <ImageUpload value={form.logo_url} onChange={(v) => upd("logo_url", v)}
+              folder="tools/logos" label="Tool Logo" />
+          </div>
+        </Row>
         <Field label="Description (card text)">
           <StyledTextarea value={form.description} onChange={(v) => upd("description", v)} rows={3} placeholder="Shown on tool cards…" />
         </Field>
@@ -737,6 +753,13 @@ export default function ToolEditor({
         </Field>
         <ImageUpload value={form.seo_og_image} onChange={(v) => upd("seo_og_image", v)}
           folder="tools/og" label="OG image (1200×630 recommended)" />
+        <Field label="Canonical URL override">
+          <StyledInput value={form.canonical_url} onChange={(v) => upd("canonical_url", v)}
+            placeholder={`https://promptbulletin.com/tools/${form.slug || "tool-slug"}`} />
+          <p style={{ fontSize: 11, color: "var(--text3)", margin: "4px 0 0" }}>
+            Leave blank to use the default URL. Set only if this tool is cross-posted elsewhere.
+          </p>
+        </Field>
       </div>
 
       {/* Sticky bottom save */}

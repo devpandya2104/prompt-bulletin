@@ -30,10 +30,10 @@ export async function generateMetadata(
   const data = await getPost(slug);
   if (!data) return {};
 
-  const post = data as BlogPostDetail & { seo_title?: string; seo_description?: string; seo_og_image?: string };
+  const post = data as BlogPostDetail & { seo_title?: string; seo_description?: string; seo_og_image?: string; canonical_url?: string };
   const title       = post.seo_title       ?? `${post.title} — PromptBulletin`;
   const description = post.seo_description ?? post.excerpt;
-  const canonicalUrl = `${SITE_URL}/blog/${slug}`;
+  const canonicalUrl = post.canonical_url ?? `${SITE_URL}/blog/${slug}`;
   const ogImage = post.seo_og_image ?? post.cover_image_url;
   const images = ogImage
     ? [{ url: ogImage, width: 1200, height: 630, alt: post.title }]

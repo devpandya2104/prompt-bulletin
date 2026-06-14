@@ -700,7 +700,7 @@ export default function ToolDetailPage({ tool, reviews, related }: {
   return (
     <div>
       <ToolHero tool={tool} upvoted={upvoted} setUpvoted={setUpvoted} upvoteCount={upvoteCount} setUpvoteCount={setUpvoteCount} saved={saved} setSaved={setSaved} />
-      <div className="tool-main-grid" style={{ maxWidth: 1280, margin: "0 auto", padding: "52px 24px 0", display: "grid", gridTemplateColumns: "1fr 340px", gap: 52 }}>
+      <div className="tool-main-grid" style={{ maxWidth: 1280, margin: "0 auto", padding: "52px 24px 80px", display: "grid", gridTemplateColumns: "1fr 340px", gap: 52 }}>
         <main style={{ display: "flex", flexDirection: "column", gap: 52, minWidth: 0 }}>
           <Overview tool={tool} />
           <ProsCons tool={tool} />

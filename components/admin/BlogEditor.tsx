@@ -504,7 +504,8 @@ type FormState = {
   author_role: string; author_bio: string;
   tags: string[]; related_tool_slug: string;
   body_blocks: BodyBlock[]; list_items: ListItem[];
-  seo_title: string; seo_description: string; seo_og_image: string;
+  focus_keyword: string;
+  seo_title: string; seo_description: string; seo_og_image: string; canonical_url: string;
 };
 
 function autoSlug(title: string) {
@@ -535,9 +536,11 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
     related_tool_slug: post?.related_tool_slug ?? "",
     body_blocks:    (post?.body_blocks     ?? []) as BodyBlock[],
     list_items:     (post?.list_items      ?? []) as ListItem[],
+    focus_keyword:   (post as Record<string, unknown>)?.focus_keyword   as string ?? "",
     seo_title:       (post as Record<string, unknown>)?.seo_title       as string ?? "",
     seo_description: (post as Record<string, unknown>)?.seo_description as string ?? "",
     seo_og_image:    (post as Record<string, unknown>)?.seo_og_image    as string ?? "",
+    canonical_url:   (post as Record<string, unknown>)?.canonical_url   as string ?? "",
   });
 
   const upd = <K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -604,7 +607,14 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
 
       {/* ── Basic info ── */}
       <div style={sectionStyle}>
-        <p style={sectionTitle}>Basic Information</p>
+        <div style={{ ...sectionTitle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span>Basic Information</span>
+          {post && (post as unknown as { updated_at?: string }).updated_at ? (
+            <span style={{ fontSize: 11, fontWeight: 400, color: "var(--text3)" }}>
+              Last saved: {new Date((post as unknown as { updated_at: string }).updated_at).toLocaleString()}
+            </span>
+          ) : null}
+        </div>
         <Field label="Title">
           <Input value={form.title} placeholder="10 Best AI Writing Tools for 2026"
             onChange={(v) => { upd("title", v); if (!post) upd("slug", autoSlug(v)); }} />
@@ -713,6 +723,20 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
         </Field>
         <ImageUpload value={form.seo_og_image} onChange={(v) => upd("seo_og_image", v)}
           folder="blog/og" label="OG image (1200×630 recommended)" />
+        <Field label="Focus keyword (primary search term)">
+          <Input value={form.focus_keyword} onChange={(v) => upd("focus_keyword", v)}
+            placeholder="e.g. best AI writing tools 2026" />
+          <p style={{ fontSize: 11, color: "var(--text3)", margin: "4px 0 0" }}>
+            The main keyword you want this post to rank for. Use it in the title, first paragraph, and H2s.
+          </p>
+        </Field>
+        <Field label="Canonical URL override">
+          <Input value={form.canonical_url} onChange={(v) => upd("canonical_url", v)}
+            placeholder={`https://promptbulletin.com/blog/${form.slug || "post-slug"}`} />
+          <p style={{ fontSize: 11, color: "var(--text3)", margin: "4px 0 0" }}>
+            Leave blank to use the default URL. Set only if this post is syndicated from another source.
+          </p>
+        </Field>
       </div>
 
       {/* Sticky save */}

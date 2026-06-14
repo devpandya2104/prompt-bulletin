@@ -27,10 +27,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const data = await getTool(slug);
   if (!data) return {};
 
-  const t = data as ToolDetail & { seo_title?: string; seo_description?: string; seo_og_image?: string };
+  const t = data as ToolDetail & { seo_title?: string; seo_description?: string; seo_og_image?: string; canonical_url?: string };
   const title       = t.seo_title       ?? `${t.name} Review — PromptBulletin`;
   const description = t.seo_description ?? t.tagline ?? t.description;
-  const canonicalUrl = `${SITE_URL}/tools/${slug}`;
+  const canonicalUrl = t.canonical_url ?? `${SITE_URL}/tools/${slug}`;
   const ogImage = t.seo_og_image
     ? [{ url: t.seo_og_image, width: 1200, height: 630, alt: `${t.name} — PromptBulletin` }]
     : [{ url: "/og-default.png", width: 1200, height: 630, alt: `${t.name} — PromptBulletin` }];
