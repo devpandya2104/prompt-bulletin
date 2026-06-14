@@ -1,4 +1,5 @@
-"use client";
+import Link from "next/link";
+import Image from "next/image";
 import type { BlogPost } from "@/lib/queries";
 import type { BlogSectionConfig } from "@/lib/site-config";
 import { DEFAULT_BLOG } from "@/lib/site-config";
@@ -23,15 +24,12 @@ export default function Blog({ posts, config = DEFAULT_BLOG }: {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {posts.map((post) => (
-            <article key={post.id}
-              className="rounded-2xl overflow-hidden cursor-pointer transition-all duration-200"
-              style={{ background: "var(--bg2)", border: "1px solid var(--border)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--border2)")}
-              onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
-              onClick={() => window.location.href = `/blog/${post.slug}`}>
-              <div className="h-40 flex items-center justify-center relative" style={{ background: "var(--bg3)", borderBottom: "1px solid var(--border)" }}>
+            <Link key={post.id} href={`/blog/${post.slug}`}
+              className="blog-card rounded-2xl overflow-hidden no-underline block transition-all duration-200"
+              style={{ background: "var(--bg2)", border: "1px solid var(--border)" }}>
+              <div className="h-40 flex items-center justify-center relative overflow-hidden" style={{ background: "var(--bg3)", borderBottom: "1px solid var(--border)" }}>
                 {post.cover_image_url ? (
-                  <img src={post.cover_image_url} alt={post.title} className="w-full h-full object-cover" />
+                  <Image src={post.cover_image_url} alt={post.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
                 ) : (
                   <>
                     <div className="absolute inset-0" style={{ backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 8px)" }} />
@@ -61,7 +59,7 @@ export default function Blog({ posts, config = DEFAULT_BLOG }: {
                   </div>
                 </div>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       </div>

@@ -63,7 +63,8 @@ export default function Discover({ tools, categories, config = DEFAULT_DISCOVER 
     })
     .sort((a, b) => {
       if (sort === "rating")  return b.rating - a.rating;
-      if (sort === "newest")  return 0;
+      if (sort === "newest")  return new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime();
+      if (sort === "trending") return b.upvote_count - a.upvote_count;
       return b.upvote_count - a.upvote_count;
     });
 

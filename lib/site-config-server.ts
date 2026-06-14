@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import {
   DEFAULT_CONFIG, DEFAULT_HERO, DEFAULT_DISCOVER, DEFAULT_CATEGORIES,
@@ -7,7 +8,8 @@ import {
 } from "@/lib/site-config";
 import type { SiteConfig } from "@/lib/site-config";
 
-export async function getSiteConfig(): Promise<SiteConfig> {
+// Cached per-request — generateMetadata + page components share one DB hit
+export const getSiteConfig = cache(async (): Promise<SiteConfig> => {
   try {
     const supabase = await createClient();
     const { data } = await supabase.from("site_config").select("key, value");
@@ -30,4 +32,4 @@ export async function getSiteConfig(): Promise<SiteConfig> {
   } catch {
     return DEFAULT_CONFIG;
   }
-}
+});

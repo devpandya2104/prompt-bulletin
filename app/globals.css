@@ -67,6 +67,11 @@ select option:hover {
   color: var(--text);
 }
 
+/* CSS hover utilities for server components (no JS needed) */
+.hover-border:hover { border-color: var(--border2) !important; }
+.footer-link:hover  { color: var(--text) !important; }
+.blog-card:hover    { border-color: var(--border2) !important; }
+
 /* ── Responsive layout ───────────────────────────────────────────── */
 
 /* Tablet: collapse sidebars, stack main grids */

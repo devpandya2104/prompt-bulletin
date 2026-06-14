@@ -1,4 +1,3 @@
-"use client";
 import type { AboutConfig } from "@/lib/site-config";
 import { DEFAULT_ABOUT } from "@/lib/site-config";
 
@@ -30,10 +29,8 @@ export default function About({ config = DEFAULT_ABOUT }: { config?: AboutConfig
           <div className="flex flex-col gap-3">
             {config.team.map((member) => (
               <div key={member.name}
-                className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200"
-                style={{ background: "var(--bg)", border: "1px solid var(--border)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--border2)")}
-                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}>
+                className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200 hover-border"
+                style={{ background: "var(--bg)", border: "1px solid var(--border)" }}>
                 <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ background: "var(--accent-dim)", border: "1px solid var(--accent)" }}>
                   <span className="text-sm font-bold" style={{ fontFamily: "var(--font-space)", color: "var(--accent)" }}>{member.initials}</span>

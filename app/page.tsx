@@ -25,12 +25,15 @@ async function getData() {
     { data: blogPosts },
   ] = await Promise.all([
     supabase.from("categories").select("*").order("sort_order"),
-    supabase.from("tools").select("*, categories(name, slug)").eq("is_published", true).order("upvote_count", { ascending: false }),
+    supabase.from("tools")
+      .select("id, name, slug, description, tag, tag_type, badge, rating, review_count, pricing, platforms, upvote_count, created_at, categories(name, slug)")
+      .eq("is_published", true)
+      .order("upvote_count", { ascending: false }),
     supabase.from("blog_posts").select("id, title, slug, excerpt, author_name, author_initials, category, read_time, cover_image_url, upvote_count, is_published, published_at").eq("is_published", true).order("published_at", { ascending: false }).limit(3),
   ]);
   return {
     categories: (categories ?? []) as Category[],
-    tools:      (tools      ?? []) as Tool[],
+    tools:      (tools      ?? []) as unknown as Tool[],
     blogPosts:  (blogPosts  ?? []) as BlogPost[],
   };
 }

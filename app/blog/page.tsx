@@ -44,7 +44,7 @@ export default async function BlogIndexPage({
   const supabase = await createClient();
   const { data: posts, count } = await supabase
     .from("blog_posts")
-    .select("*", { count: "exact" })
+    .select("id, title, slug, excerpt, author_name, author_initials, category, read_time, cover_image_url, upvote_count, is_published, published_at", { count: "exact" })
     .eq("is_published", true)
     .order("published_at", { ascending: false })
     .range(from, to);

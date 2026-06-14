@@ -61,6 +61,7 @@ export type Tool = {
   tag: string | null;
   tag_type: "editor" | "top" | null;
   categories?: { name: string; slug: string } | null;
+  created_at?: string | null;
 };
 
 export type BlogPost = {

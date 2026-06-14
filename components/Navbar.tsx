@@ -1,11 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import AuthModal from "./AuthModal";
 import type { User } from "@supabase/supabase-js";
 import type { NavbarConfig } from "@/lib/site-config";
 import { DEFAULT_NAVBAR } from "@/lib/site-config";
+
+const AuthModal = dynamic(() => import("./AuthModal"), { ssr: false });
 
 export default function Navbar({ config = DEFAULT_NAVBAR }: { config?: NavbarConfig }) {
   const [scrolled,   setScrolled]   = useState(false);
