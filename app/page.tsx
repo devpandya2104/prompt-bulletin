@@ -13,6 +13,8 @@ import Newsletter  from "@/components/Newsletter";
 import Footer      from "@/components/Footer";
 import type { Category, Tool, BlogPost } from "@/lib/queries";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://promptbulletin.com";
+
 export const revalidate = 60;
 
 async function getData() {
@@ -39,8 +41,44 @@ export default async function Home() {
     getSiteConfig(),
   ]);
 
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "PromptBulletin",
+    "url": SITE_URL,
+    "description": "Discover the best AI tools through editorial reviews, community upvotes, and structured comparisons.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": { "@type": "EntryPoint", "urlTemplate": `${SITE_URL}/#discover?q={search_term_string}` },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "PromptBulletin",
+    "url": SITE_URL,
+    "logo": `${SITE_URL}/og-default.png`,
+    "description": "AI tools directory with expert editorial reviews and community upvotes.",
+    "sameAs": [`https://twitter.com/promptbulletin`],
+  };
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": config.faq.items.map((item) => ({
+      "@type": "Question",
+      "name": item.q,
+      "acceptedAnswer": { "@type": "Answer", "text": item.a },
+    })),
+  };
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <Navbar config={config.navbar} />
       <main>
         <Hero        config={config.hero} />

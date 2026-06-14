@@ -21,9 +21,14 @@ const lora = Lora({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://promptbulletin.com";
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://promptbulletin.com"),
-  title: "PromptBulletin — AI Tools & Website Reviews",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "PromptBulletin — AI Tools & Website Reviews",
+    template: "%s | PromptBulletin",
+  },
   description:
     "Discover the best AI tools through editorial reviews, community upvotes, and structured comparisons. Trusted by 48K+ professionals.",
   keywords: ["AI tools", "AI reviews", "best AI tools 2026", "AI directory", "prompt tools"],
@@ -31,8 +36,17 @@ export const metadata: Metadata = {
     title: "PromptBulletin — AI Tools & Website Reviews",
     description: "Editorial reviews, real upvotes, and structured comparisons for every AI tool.",
     type: "website",
-    url: "https://promptbulletin.com",
+    url: SITE_URL,
+    siteName: "PromptBulletin",
+    locale: "en_US",
+    images: [{ url: "/og-default.png", width: 1200, height: 630, alt: "PromptBulletin — AI Tools Directory" }],
   },
+  twitter: {
+    card: "summary_large_image",
+    site: "@promptbulletin",
+    creator: "@promptbulletin",
+  },
+  alternates: { canonical: SITE_URL },
 };
 
 export default function RootLayout({

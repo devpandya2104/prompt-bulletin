@@ -6,9 +6,27 @@ import type { BlogPost } from "@/lib/queries";
 
 export const revalidate = 60;
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://promptbulletin.com";
+
 export const metadata = {
   title: "Blog — PromptBulletin",
   description: "Deep dives, roundups, and opinion from the PromptBulletin editorial team.",
+  alternates: { canonical: `${SITE_URL}/blog` },
+  openGraph: {
+    title: "Blog — PromptBulletin",
+    description: "Deep dives, roundups, and opinion from the PromptBulletin editorial team.",
+    type: "website" as const,
+    url: `${SITE_URL}/blog`,
+    siteName: "PromptBulletin",
+    locale: "en_US",
+    images: [{ url: "/og-default.png", width: 1200, height: 630, alt: "PromptBulletin Blog" }],
+  },
+  twitter: {
+    card: "summary_large_image" as const,
+    title: "Blog — PromptBulletin",
+    description: "Deep dives, roundups, and opinion from the PromptBulletin editorial team.",
+    site: "@promptbulletin",
+  },
 };
 
 const PER_PAGE = 9;
