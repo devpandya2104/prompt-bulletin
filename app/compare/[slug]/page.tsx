@@ -1,10 +1,9 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ArticlePage from "@/components/ArticlePage";
-import ListiclePage from "@/components/ListiclePage";
 import type { BlogPostDetail } from "@/lib/queries";
 import type { Metadata } from "next";
 
@@ -18,6 +17,7 @@ const getPost = cache(async (slug: string) => {
     .from("blog_posts")
     .select("*")
     .eq("slug", slug)
+    .eq("post_type", "comparison")
     .eq("is_published", true)
     .single();
   return data;
@@ -33,72 +33,43 @@ export async function generateMetadata(
   const post = data as BlogPostDetail & { seo_title?: string; seo_description?: string; seo_og_image?: string; canonical_url?: string };
   const title       = post.seo_title       ?? `${post.title} — PromptBulletin`;
   const description = post.seo_description ?? post.excerpt;
-  const canonicalUrl = post.canonical_url ?? `${SITE_URL}/blog/${slug}`;
-  const ogImage = post.seo_og_image ?? post.cover_image_url;
+  const canonicalUrl = post.canonical_url  ?? `${SITE_URL}/compare/${slug}`;
+  const ogImage     = post.seo_og_image    ?? post.cover_image_url;
   const images = ogImage
     ? [{ url: ogImage, width: 1200, height: 630, alt: post.title }]
     : [{ url: "/og-default.png", width: 1200, height: 630, alt: post.title }];
 
   return {
-    title,
-    description,
+    title, description,
     alternates: { canonical: canonicalUrl },
     authors: post.author_name ? [{ name: post.author_name }] : undefined,
     openGraph: {
-      title,
-      description,
-      type: "article",
-      url: canonicalUrl,
-      siteName: "PromptBulletin",
-      locale: "en_US",
-      images,
+      title, description, type: "article", url: canonicalUrl,
+      siteName: "PromptBulletin", locale: "en_US", images,
       ...(post.published_at ? { publishedTime: post.published_at } : {}),
       ...(post.author_name ? { authors: [post.author_name] } : {}),
     },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      site: "@promptbulletin",
-      images,
-    },
+    twitter: { card: "summary_large_image", title, description, site: "@promptbulletin", images },
   };
 }
 
-export default async function BlogArticlePage(
-  { params }: { params: Promise<{ slug: string }> }
-) {
+export default async function ComparePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-
-  // Cached — generateMetadata already fetched this, no second DB hit
   const post = await getPost(slug);
   if (!post) notFound();
 
-  // Redirect to canonical URL for non-blog post types
-  if (post.post_type === "comparison") redirect(`/compare/${slug}`);
-  if (post.post_type === "best")       redirect(`/best/${slug}`);
-
   const typedPost = post as BlogPostDetail;
-  const canonicalUrl = `${SITE_URL}/blog/${slug}`;
+  const canonicalUrl = `${SITE_URL}/compare/${slug}`;
 
   const articleSchema = {
     "@context": "https://schema.org",
-    "@type": typedPost.post_type === "listicle" ? "Article" : "BlogPosting",
+    "@type": "Article",
     "headline": typedPost.title,
     "description": typedPost.excerpt,
     "url": canonicalUrl,
     "mainEntityOfPage": { "@type": "WebPage", "@id": canonicalUrl },
-    "author": {
-      "@type": "Person",
-      "name": typedPost.author_name,
-      ...(typedPost.author_role ? { "jobTitle": typedPost.author_role } : {}),
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "PromptBulletin",
-      "url": SITE_URL,
-      "logo": { "@type": "ImageObject", "url": `${SITE_URL}/og-default.png` },
-    },
+    "author": { "@type": "Person", "name": typedPost.author_name },
+    "publisher": { "@type": "Organization", "name": "PromptBulletin", "url": SITE_URL },
     ...(typedPost.published_at ? { "datePublished": typedPost.published_at } : {}),
     ...(typedPost.cover_image_url ? { "image": typedPost.cover_image_url } : {}),
     ...(typedPost.tags?.length ? { "keywords": typedPost.tags.join(", ") } : {}),
@@ -108,8 +79,8 @@ export default async function BlogArticlePage(
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home", "item": SITE_URL },
-      { "@type": "ListItem", "position": 2, "name": "Blog", "item": `${SITE_URL}/blog` },
+      { "@type": "ListItem", "position": 1, "name": "Home",        "item": SITE_URL },
+      { "@type": "ListItem", "position": 2, "name": "Comparisons", "item": `${SITE_URL}/compare` },
       { "@type": "ListItem", "position": 3, "name": typedPost.title, "item": canonicalUrl },
     ],
   };
@@ -119,11 +90,7 @@ export default async function BlogArticlePage(
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <Navbar />
-      {typedPost.post_type === "listicle" ? (
-        <ListiclePage post={typedPost} />
-      ) : (
-        <ArticlePage post={typedPost} />
-      )}
+      <ArticlePage post={typedPost} />
       <Footer />
     </>
   );

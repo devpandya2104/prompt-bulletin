@@ -495,10 +495,16 @@ function ListItemsEditor({ items, onChange }: { items: ListItem[]; onChange: (v:
 // ── Main BlogEditor ───────────────────────────────────────────────
 const CATEGORIES = ["Deep Dive", "Roundup", "Guide", "News", "Opinion"];
 
+function postUrl(slug: string, postType: string): string {
+  if (postType === "comparison") return `/compare/${slug}`;
+  if (postType === "best") return `/best/${slug}`;
+  return `/blog/${slug}`;
+}
+
 type FormState = {
   title: string; slug: string; excerpt: string;
   category: string; read_time: string; cover_image_url: string;
-  post_type: "article" | "listicle"; is_published: boolean;
+  post_type: "article" | "listicle" | "comparison" | "best"; is_published: boolean;
   published_at: string; upvote_count: number;
   author_name: string; author_initials: string;
   author_role: string; author_bio: string;
@@ -524,7 +530,7 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
     category:       post?.category        ?? "Deep Dive",
     read_time:      post?.read_time        ?? "",
     cover_image_url: post?.cover_image_url ?? "",
-    post_type:      (post?.post_type       ?? "article") as "article" | "listicle",
+    post_type:      (post?.post_type       ?? "article") as "article" | "listicle" | "comparison" | "best",
     is_published:   post?.is_published     ?? false,
     published_at:   post?.published_at ? new Date(post.published_at).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16),
     upvote_count:   post?.upvote_count     ?? 0,
@@ -588,9 +594,9 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
             {post ? `Edit: ${post.title.slice(0, 50)}${post.title.length > 50 ? "…" : ""}` : "New Blog Post"}
           </h1>
           {post && (
-            <a href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer"
+            <a href={postUrl(post.slug, form.post_type)} target="_blank" rel="noopener noreferrer"
               style={{ fontSize: 12, color: "var(--text3)", textDecoration: "none" }}>
-              /blog/{post.slug} ↗
+              {postUrl(post.slug, form.post_type)} ↗
             </a>
           )}
         </div>
@@ -631,9 +637,14 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
             <Select value={form.category} onChange={(v) => upd("category", v)}
               options={CATEGORIES.map((c) => ({ value: c, label: c }))} />
           </Field>
-          <Field label="Post type">
-            <Select value={form.post_type} onChange={(v) => upd("post_type", v as "article" | "listicle")}
-              options={[{ value: "article", label: "Article (TOC + body blocks)" }, { value: "listicle", label: "Listicle (ranked tool list)" }]} />
+          <Field label="Post type → URL">
+            <Select value={form.post_type} onChange={(v) => upd("post_type", v as FormState["post_type"])}
+              options={[
+                { value: "article",    label: "Article → /blog/slug" },
+                { value: "listicle",   label: "Listicle (ranked list) → /blog/slug" },
+                { value: "comparison", label: "Comparison (vs article) → /compare/slug" },
+                { value: "best",       label: "Best For guide (ranked list) → /best/slug" },
+              ]} />
           </Field>
           <Field label="Cover image (optional)">
             <ImageUpload value={form.cover_image_url} onChange={(v) => upd("cover_image_url", v)}
@@ -683,17 +694,23 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
       </div>
 
       {/* ── Content (conditional on post_type) ── */}
-      {form.post_type === "article" ? (
+      {form.post_type === "article" || form.post_type === "comparison" ? (
         <div style={sectionStyle}>
-          <p style={sectionTitle}>Article Body Blocks</p>
+          <p style={sectionTitle}>
+            {form.post_type === "comparison" ? "Comparison Body Blocks" : "Article Body Blocks"}
+          </p>
           <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 16, marginTop: -12 }}>
-            Each block maps to a section rendered in the article. Use H2 blocks to generate the table of contents. Order matters — use arrows to reorder.
+            {form.post_type === "comparison"
+              ? "Use H2 blocks for sections like 'Head-to-Head', 'Pricing', 'Verdict'. Add a Table block for feature comparison. FAQs work great as H2 + paragraphs."
+              : "Each block maps to a section rendered in the article. Use H2 blocks to generate the table of contents. Order matters — use arrows to reorder."}
           </p>
           <BodyBlocksEditor blocks={form.body_blocks} onChange={(v) => upd("body_blocks", v)} />
         </div>
       ) : (
         <div style={sectionStyle}>
-          <p style={sectionTitle}>Listicle Items</p>
+          <p style={sectionTitle}>
+            {form.post_type === "best" ? "Best For — Ranked Tool Items" : "Listicle Items"}
+          </p>
           <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 16, marginTop: -12 }}>
             Each item is a ranked tool card. Ranks are auto-numbered by order — drag (use arrows) to reorder and ranks update automatically.
           </p>

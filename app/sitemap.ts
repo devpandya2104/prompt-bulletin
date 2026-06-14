@@ -9,10 +9,9 @@ export const revalidate = 3600;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = await createClient();
 
-  const [{ data: tools }, { data: posts }, { data: categories }] = await Promise.all([
+  const [{ data: tools }, { data: posts }] = await Promise.all([
     supabase.from("tools").select("slug, updated_at").eq("is_published", true),
-    supabase.from("blog_posts").select("slug, published_at").eq("is_published", true),
-    supabase.from("categories").select("slug"),
+    supabase.from("blog_posts").select("slug, published_at, post_type").eq("is_published", true),
   ]);
 
   const staticPages: MetadataRoute.Sitemap = [
@@ -27,12 +26,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  const blogPages: MetadataRoute.Sitemap = (posts ?? []).map((p) => ({
-    url: `${SITE_URL}/blog/${p.slug}`,
-    lastModified: p.published_at ? new Date(p.published_at) : new Date(),
-    changeFrequency: "monthly",
-    priority: 0.7,
-  }));
+  const blogPages: MetadataRoute.Sitemap = (posts ?? [])
+    .filter((p) => p.post_type === "article" || p.post_type === "listicle" || !p.post_type)
+    .map((p) => ({
+      url: `${SITE_URL}/blog/${p.slug}`,
+      lastModified: p.published_at ? new Date(p.published_at) : new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    }));
 
-  return [...staticPages, ...toolPages, ...blogPages];
+  const comparePages: MetadataRoute.Sitemap = (posts ?? [])
+    .filter((p) => p.post_type === "comparison")
+    .map((p) => ({
+      url: `${SITE_URL}/compare/${p.slug}`,
+      lastModified: p.published_at ? new Date(p.published_at) : new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.75,
+    }));
+
+  const bestPages: MetadataRoute.Sitemap = (posts ?? [])
+    .filter((p) => p.post_type === "best")
+    .map((p) => ({
+      url: `${SITE_URL}/best/${p.slug}`,
+      lastModified: p.published_at ? new Date(p.published_at) : new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.75,
+    }));
+
+  return [...staticPages, ...toolPages, ...blogPages, ...comparePages, ...bestPages];
 }

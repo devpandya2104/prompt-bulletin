@@ -103,7 +103,7 @@ export type ListItem = {
 };
 
 export type BlogPostDetail = BlogPost & {
-  post_type: "article" | "listicle";
+  post_type: "article" | "listicle" | "comparison" | "best";
   author_role: string | null;
   author_bio: string | null;
   tags: string[];
