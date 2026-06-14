@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
@@ -5,25 +6,34 @@ import Footer from "@/components/Footer";
 import ToolDetailPage from "@/components/ToolDetailPage";
 import type { ToolDetail, ToolReview, Tool } from "@/lib/queries";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://promptbulletin.com";
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+// Deduplicate — generateMetadata and the page both call this, React cache ensures one DB hit per request
+const getTool = cache(async (slug: string) => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("tools")
-    .select("name, tagline, description, seo_title, seo_description, seo_og_image, rating, review_count, categories(name)")
+    .select("*, categories(name, slug)")
     .eq("slug", slug)
+    .eq("is_published", true)
     .single();
+  return data;
+});
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const data = await getTool(slug);
   if (!data) return {};
-  const title       = data.seo_title       ?? `${data.name} Review — PromptBulletin`;
-  const description = data.seo_description ?? data.tagline ?? data.description;
+
+  const t = data as ToolDetail & { seo_title?: string; seo_description?: string; seo_og_image?: string };
+  const title       = t.seo_title       ?? `${t.name} Review — PromptBulletin`;
+  const description = t.seo_description ?? t.tagline ?? t.description;
   const canonicalUrl = `${SITE_URL}/tools/${slug}`;
-  const ogImage = data.seo_og_image
-    ? [{ url: data.seo_og_image, width: 1200, height: 630, alt: `${data.name} — PromptBulletin` }]
-    : [{ url: "/og-default.png", width: 1200, height: 630, alt: `${data.name} — PromptBulletin` }];
+  const ogImage = t.seo_og_image
+    ? [{ url: t.seo_og_image, width: 1200, height: 630, alt: `${t.name} — PromptBulletin` }]
+    : [{ url: "/og-default.png", width: 1200, height: 630, alt: `${t.name} — PromptBulletin` }];
 
   return {
     title,
@@ -50,21 +60,19 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ToolPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+
+  // getTool is cached — no second DB hit since generateMetadata already called it
+  const tool = await getTool(slug);
+  if (!tool) notFound();
+
   const supabase = await createClient();
 
-  const [{ data: tool }, { data: reviews }, { data: related }] = await Promise.all([
-    supabase
-      .from("tools")
-      .select("*, categories(name, slug)")
-      .eq("slug", slug)
-      .eq("is_published", true)
-      .single(),
+  // Now fire reviews + related in true parallel using tool.id (no extra ID lookup)
+  const [{ data: reviews }, { data: related }] = await Promise.all([
     supabase
       .from("tool_reviews")
       .select("*")
-      .eq("tool_id", (
-        await supabase.from("tools").select("id").eq("slug", slug).single()
-      ).data?.id ?? "")
+      .eq("tool_id", tool.id)
       .order("helpful_count", { ascending: false }),
     supabase
       .from("tools")
@@ -73,8 +81,6 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
       .neq("slug", slug)
       .limit(3),
   ]);
-
-  if (!tool) notFound();
 
   const t = tool as ToolDetail & { website_url?: string; categories?: { name: string; slug: string } | null };
   const canonicalUrl = `${SITE_URL}/tools/${slug}`;

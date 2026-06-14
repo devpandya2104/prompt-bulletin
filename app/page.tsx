@@ -15,7 +15,7 @@ import type { Category, Tool, BlogPost } from "@/lib/queries";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://promptbulletin.com";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 async function getData() {
   const supabase = await createClient();

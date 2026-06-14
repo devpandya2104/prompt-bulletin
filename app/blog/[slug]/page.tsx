@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/Navbar";
@@ -7,36 +8,42 @@ import ListiclePage from "@/components/ListiclePage";
 import type { BlogPostDetail } from "@/lib/queries";
 import type { Metadata } from "next";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://promptbulletin.com";
+
+const getPost = cache(async (slug: string) => {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("blog_posts")
+    .select("*")
+    .eq("slug", slug)
+    .eq("is_published", true)
+    .single();
+  return data;
+});
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("blog_posts")
-    .select("title, excerpt, author_name, published_at, cover_image_url, seo_title, seo_description, seo_og_image")
-    .eq("slug", slug)
-    .eq("is_published", true)
-    .single();
-
+  const data = await getPost(slug);
   if (!data) return {};
-  const title       = data.seo_title       ?? `${data.title} — PromptBulletin`;
-  const description = data.seo_description ?? data.excerpt;
+
+  const post = data as BlogPostDetail & { seo_title?: string; seo_description?: string; seo_og_image?: string };
+  const title       = post.seo_title       ?? `${post.title} — PromptBulletin`;
+  const description = post.seo_description ?? post.excerpt;
   const canonicalUrl = `${SITE_URL}/blog/${slug}`;
-  const ogImage = data.seo_og_image ?? data.cover_image_url;
+  const ogImage = post.seo_og_image ?? post.cover_image_url;
   const images = ogImage
-    ? [{ url: ogImage, width: 1200, height: 630, alt: data.title }]
-    : [{ url: "/og-default.png", width: 1200, height: 630, alt: data.title }];
+    ? [{ url: ogImage, width: 1200, height: 630, alt: post.title }]
+    : [{ url: "/og-default.png", width: 1200, height: 630, alt: post.title }];
 
   return {
     title,
     description,
     alternates: { canonical: canonicalUrl },
-    authors: data.author_name ? [{ name: data.author_name }] : undefined,
+    authors: post.author_name ? [{ name: post.author_name }] : undefined,
     openGraph: {
       title,
       description,
@@ -45,8 +52,8 @@ export async function generateMetadata(
       siteName: "PromptBulletin",
       locale: "en_US",
       images,
-      ...(data.published_at ? { publishedTime: data.published_at } : {}),
-      ...(data.author_name ? { authors: [data.author_name] } : {}),
+      ...(post.published_at ? { publishedTime: post.published_at } : {}),
+      ...(post.author_name ? { authors: [post.author_name] } : {}),
     },
     twitter: {
       card: "summary_large_image",
@@ -62,15 +69,9 @@ export default async function BlogArticlePage(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
-  const supabase = await createClient();
 
-  const { data: post } = await supabase
-    .from("blog_posts")
-    .select("*")
-    .eq("slug", slug)
-    .eq("is_published", true)
-    .single();
-
+  // Cached — generateMetadata already fetched this, no second DB hit
+  const post = await getPost(slug);
   if (!post) notFound();
 
   const typedPost = post as BlogPostDetail;

@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import BlogPage from "@/components/BlogPage";
 import type { BlogPost } from "@/lib/queries";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://promptbulletin.com";
 
