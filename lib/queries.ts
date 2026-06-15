@@ -82,6 +82,7 @@ export type BlogPost = {
 };
 
 export type BodyBlock =
+  | { type: "richtext"; html: string }
   | { type: "h2"; id: string; text: string }
   | { type: "p"; text: string }
   | { type: "callout"; variant: "info" | "tip" | "warning"; title: string; text: string }

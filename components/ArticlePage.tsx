@@ -4,6 +4,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { BlogPostDetail, BodyBlock } from "@/lib/queries";
 import { BLOG_CATEGORY_COLORS } from "@/lib/site-config";
+import { extractTocFromHtml } from "@/components/admin/RichTextEditor";
 
 // ── Reading progress bar ──────────────────────────────────────────
 function ReadingProgress() {
@@ -58,6 +59,14 @@ function Toc({ entries, activeId }: { entries: TocEntry[]; activeId: string }) {
 // ── Body block renderer ───────────────────────────────────────────
 function Block({ block }: { block: BodyBlock }) {
   switch (block.type) {
+    case "richtext":
+      return (
+        <div
+          className="pb-prose"
+          dangerouslySetInnerHTML={{ __html: block.html }}
+        />
+      );
+
     case "h2":
       return (
         <h2 id={block.id} className="text-2xl font-bold mt-10 mb-4 scroll-mt-28"
@@ -191,9 +200,12 @@ export default function ArticlePage({ post, relatedTool }: { post: BlogPostDetai
   const [copied,     setCopied]     = useState(false);
   const observersRef = useRef<IntersectionObserver[]>([]);
 
-  const tocEntries: TocEntry[] = (post.body_blocks ?? [])
-    .filter((b): b is Extract<BodyBlock, { type: "h2" }> => b.type === "h2")
-    .map((b) => ({ id: b.id, text: b.text }));
+  const richtextBlock = (post.body_blocks ?? []).find(b => b.type === "richtext") as { type: "richtext"; html: string } | undefined;
+  const tocEntries: TocEntry[] = richtextBlock
+    ? extractTocFromHtml(richtextBlock.html)
+    : (post.body_blocks ?? [])
+        .filter((b): b is Extract<BodyBlock, { type: "h2" }> => b.type === "h2")
+        .map((b) => ({ id: b.id, text: b.text }));
 
   // IntersectionObserver for TOC active tracking
   useEffect(() => {

@@ -3,6 +3,7 @@ import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { saveBlogPost, createBlogPost } from "@/app/admin/actions";
 import ImageUpload from "./ImageUpload";
+import RichTextEditor, { addHeadingIds } from "./RichTextEditor";
 import type { BlogPostDetail, BodyBlock, ListItem } from "@/lib/queries";
 import { BLOG_CATEGORIES } from "@/lib/site-config";
 
@@ -135,29 +136,38 @@ function StringList({ items, onChange, placeholder }: {
   );
 }
 
-// ── Body block editor ─────────────────────────────────────────────
-type BlockType = BodyBlock["type"];
+// ── Special block editor (callout, table, toolcta, datapoints) ────
+type SpecialBlockType = "callout" | "pullquote" | "datapoints" | "table" | "toolcta";
 
-const BLOCK_TYPES: { value: BlockType; label: string }[] = [
-  { value: "h2",         label: "Heading (H2)" },
-  { value: "p",          label: "Paragraph" },
-  { value: "callout",    label: "Callout box" },
+const SPECIAL_BLOCK_TYPES: { value: SpecialBlockType; label: string }[] = [
+  { value: "callout",    label: "Callout / Info box" },
   { value: "pullquote",  label: "Pull quote" },
   { value: "datapoints", label: "Data points grid" },
   { value: "table",      label: "Comparison table" },
-  { value: "toolcta",    label: "Tool CTA" },
+  { value: "toolcta",    label: "Tool CTA button" },
 ];
 
-function newBlock(type: BlockType): BodyBlock {
+function newSpecialBlock(type: SpecialBlockType): BodyBlock {
   switch (type) {
-    case "h2":         return { type, id: "", text: "" };
-    case "p":          return { type, text: "" };
     case "callout":    return { type, variant: "info", title: "", text: "" };
     case "pullquote":  return { type, text: "" };
     case "datapoints": return { type, items: [{ value: "", label: "" }] };
     case "table":      return { type, headers: ["Feature", "Value"], rows: [["", ""]] };
     case "toolcta":    return { type, tool_name: "", tool_slug: "", cta_text: "" };
   }
+}
+
+// Helper: convert old h2/p body_blocks to HTML for migration
+function blocksToHtml(blocks: BodyBlock[]): string {
+  return blocks
+    .filter(b => b.type === "h2" || b.type === "p" || b.type === "pullquote")
+    .map(b => {
+      if (b.type === "h2") return `<h2>${b.text}</h2>`;
+      if (b.type === "p") return `<p>${b.text}</p>`;
+      if (b.type === "pullquote") return `<blockquote><p>${(b as { type: "pullquote"; text: string }).text}</p></blockquote>`;
+      return "";
+    })
+    .join("");
 }
 
 function autoId(text: string) {
@@ -170,7 +180,7 @@ function BlockCard({ block, idx, total, onChange, onRemove, onMove }: {
   onRemove: () => void;
   onMove: (dir: -1 | 1) => void;
 }) {
-  const typeLabel = BLOCK_TYPES.find((t) => t.value === block.type)?.label ?? block.type;
+  const typeLabel = SPECIAL_BLOCK_TYPES.find((t) => t.value === block.type)?.label ?? block.type;
 
   return (
     <div style={{
@@ -197,29 +207,6 @@ function BlockCard({ block, idx, total, onChange, onRemove, onMove }: {
 
       {/* Block fields */}
       <div style={{ padding: 14 }}>
-        {block.type === "h2" && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 160px", gap: 10 }}>
-            <div>
-              <label style={labelStyle}>Heading text</label>
-              <Input value={block.text} placeholder="Section heading…"
-                onChange={(v) => onChange({ ...block, text: v, id: block.id || autoId(v) })} />
-            </div>
-            <div>
-              <label style={labelStyle}>Anchor ID</label>
-              <Input value={block.id} placeholder="auto-from-text"
-                onChange={(v) => onChange({ ...block, id: v })} />
-            </div>
-          </div>
-        )}
-
-        {block.type === "p" && (
-          <>
-            <label style={labelStyle}>Paragraph text</label>
-            <Textarea value={block.text} placeholder="Write paragraph…" rows={4}
-              onChange={(v) => onChange({ ...block, text: v })} />
-          </>
-        )}
-
         {block.type === "callout" && (
           <>
             <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 10, marginBottom: 10 }}>
@@ -344,8 +331,8 @@ function BlockCard({ block, idx, total, onChange, onRemove, onMove }: {
   );
 }
 
-function BodyBlocksEditor({ blocks, onChange }: { blocks: BodyBlock[]; onChange: (v: BodyBlock[]) => void }) {
-  const [addType, setAddType] = useState<BlockType>("p");
+function SpecialBlocksEditor({ blocks, onChange }: { blocks: BodyBlock[]; onChange: (v: BodyBlock[]) => void }) {
+  const [addType, setAddType] = useState<SpecialBlockType>("callout");
 
   const move = (idx: number, dir: -1 | 1) => {
     const next = [...blocks];
@@ -356,6 +343,9 @@ function BodyBlocksEditor({ blocks, onChange }: { blocks: BodyBlock[]; onChange:
 
   return (
     <div>
+      <p style={{ fontSize: 12, color: "var(--text3)", margin: "0 0 12px" }}>
+        Special blocks appear after the main article content. Use these for callout boxes, comparison tables, data highlights, and tool CTAs.
+      </p>
       {blocks.map((block, i) => (
         <BlockCard key={i} block={block} idx={i} total={blocks.length}
           onChange={(b) => { const next = [...blocks]; next[i] = b; onChange(next); }}
@@ -363,11 +353,10 @@ function BodyBlocksEditor({ blocks, onChange }: { blocks: BodyBlock[]; onChange:
           onMove={(dir) => move(i, dir)} />
       ))}
 
-      {/* Add block row */}
       <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 12 }}>
-        <Select value={addType} onChange={(v) => setAddType(v as BlockType)} options={BLOCK_TYPES} />
+        <Select value={addType} onChange={(v) => setAddType(v as SpecialBlockType)} options={SPECIAL_BLOCK_TYPES} />
         <button
-          onClick={() => onChange([...blocks, newBlock(addType)])}
+          onClick={() => onChange([...blocks, newSpecialBlock(addType)])}
           style={{ padding: "9px 18px", borderRadius: 8, background: "var(--accent)", border: "none", color: "#000", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
           + Add block
         </button>
@@ -509,7 +498,9 @@ type FormState = {
   author_name: string; author_initials: string;
   author_role: string; author_bio: string;
   tags: string[]; related_tool_slug: string;
-  body_blocks: BodyBlock[]; list_items: ListItem[];
+  richtext_body: string;
+  body_blocks: BodyBlock[];
+  list_items: ListItem[];
   focus_keyword: string;
   seo_title: string; seo_description: string; seo_og_image: string; canonical_url: string;
 };
@@ -522,6 +513,12 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState<"idle" | "saving" | "ok" | "error">("idle");
+
+  // Separate richtext content from special blocks on load
+  const existingBlocks = (post?.body_blocks ?? []) as BodyBlock[];
+  const richtextBlock  = existingBlocks.find(b => b.type === "richtext") as { type: "richtext"; html: string } | undefined;
+  const specialBlocks  = existingBlocks.filter(b => ["callout", "pullquote", "datapoints", "table", "toolcta"].includes(b.type));
+  const initialRichtext = richtextBlock?.html ?? blocksToHtml(existingBlocks);
 
   const [form, setForm] = useState<FormState>({
     title:          post?.title          ?? "",
@@ -540,7 +537,8 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
     author_bio:     post?.author_bio       ?? "",
     tags:           post?.tags             ?? [],
     related_tool_slug: post?.related_tool_slug ?? "",
-    body_blocks:    (post?.body_blocks     ?? []) as BodyBlock[],
+    richtext_body:  initialRichtext,
+    body_blocks:    specialBlocks as BodyBlock[],
     list_items:     (post?.list_items      ?? []) as ListItem[],
     focus_keyword:   (post as Record<string, unknown>)?.focus_keyword   as string ?? "",
     seo_title:       (post as Record<string, unknown>)?.seo_title       as string ?? "",
@@ -556,8 +554,15 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
     startTransition(async () => {
       setSaved("saving");
       try {
+        // Combine richtext content + special blocks into body_blocks for storage
+        const richtextHtml = addHeadingIds(form.richtext_body || "");
+        const combinedBlocks: BodyBlock[] = [
+          ...(richtextHtml ? [{ type: "richtext" as const, html: richtextHtml }] : []),
+          ...form.body_blocks,
+        ];
         const payload = {
           ...form,
+          body_blocks: combinedBlocks,
           published_at: form.published_at ? new Date(form.published_at).toISOString() : null,
           upvote_count: Number(form.upvote_count),
           related_tool_slug: form.related_tool_slug || null,
@@ -695,17 +700,24 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
 
       {/* ── Content (conditional on post_type) ── */}
       {form.post_type === "article" || form.post_type === "comparison" ? (
-        <div style={sectionStyle}>
-          <p style={sectionTitle}>
-            {form.post_type === "comparison" ? "Comparison Body Blocks" : "Article Body Blocks"}
-          </p>
-          <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 16, marginTop: -12 }}>
-            {form.post_type === "comparison"
-              ? "Use H2 blocks for sections like 'Head-to-Head', 'Pricing', 'Verdict'. Add a Table block for feature comparison. FAQs work great as H2 + paragraphs."
-              : "Each block maps to a section rendered in the article. Use H2 blocks to generate the table of contents. Order matters — use arrows to reorder."}
-          </p>
-          <BodyBlocksEditor blocks={form.body_blocks} onChange={(v) => upd("body_blocks", v)} />
-        </div>
+        <>
+          <div style={sectionStyle}>
+            <p style={{ ...sectionTitle, marginBottom: 16 }}>
+              {form.post_type === "comparison" ? "Comparison Content" : "Article Content"}
+            </p>
+            <p style={{ fontSize: 12, color: "var(--text3)", margin: "-8px 0 14px" }}>
+              Use <strong style={{ color: "var(--text2)" }}>H2</strong> headings to generate the table of contents. Links, bold, italic, lists, blockquotes and more are all supported via the toolbar.
+            </p>
+            <RichTextEditor
+              value={form.richtext_body}
+              onChange={(v) => upd("richtext_body", v)}
+            />
+          </div>
+          <div style={sectionStyle}>
+            <p style={sectionTitle}>Special Blocks (optional)</p>
+            <SpecialBlocksEditor blocks={form.body_blocks} onChange={(v) => upd("body_blocks", v)} />
+          </div>
+        </>
       ) : (
         <div style={sectionStyle}>
           <p style={sectionTitle}>
