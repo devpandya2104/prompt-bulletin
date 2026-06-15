@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { saveBlogPost, createBlogPost } from "@/app/admin/actions";
 import ImageUpload from "./ImageUpload";
 import RichTextEditor, { addHeadingIds } from "./RichTextEditor";
-import type { BlogPostDetail, BodyBlock, ListItem } from "@/lib/queries";
+import type { BlogPostDetail, BodyBlock, ListItem, Author } from "@/lib/queries";
 import { BLOG_CATEGORIES } from "@/lib/site-config";
 
 // ── Shared styles ─────────────────────────────────────────────────
@@ -428,9 +428,13 @@ function ListItemCard({ item, idx, total, onChange, onRemove, onMove }: {
         </div>
 
         <div style={{ marginBottom: 12 }}>
-          <label style={labelStyle}>Description (Lora serif paragraph shown under the verdict)</label>
-          <Textarea value={item.description} rows={3} placeholder="Describe this tool's position in the list…"
-            onChange={(v) => onChange({ ...item, description: v })} />
+          <label style={labelStyle}>Description (rich text — shown under the verdict badge)</label>
+          <RichTextEditor
+            value={item.description}
+            onChange={(v) => onChange({ ...item, description: v })}
+            placeholder="Describe this tool's strengths, who it's for, and what makes it stand out…"
+            minHeight={100}
+          />
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
@@ -495,10 +499,13 @@ type FormState = {
   category: string; read_time: string; cover_image_url: string;
   post_type: "article" | "listicle" | "comparison" | "best"; is_published: boolean;
   published_at: string; upvote_count: number;
+  author_id: string;
   author_name: string; author_initials: string;
   author_role: string; author_bio: string;
   tags: string[]; related_tool_slug: string;
   richtext_body: string;
+  intro_html: string;
+  conclusion_html: string;
   body_blocks: BodyBlock[];
   list_items: ListItem[];
   focus_keyword: string;
@@ -509,7 +516,7 @@ function autoSlug(title: string) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 80);
 }
 
-export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
+export default function BlogEditor({ post, authors = [] }: { post: BlogPostDetail | null; authors?: Author[] }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState<"idle" | "saving" | "ok" | "error">("idle");
@@ -531,6 +538,7 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
     is_published:   post?.is_published     ?? false,
     published_at:   post?.published_at ? new Date(post.published_at).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16),
     upvote_count:   post?.upvote_count     ?? 0,
+    author_id:      (post as Record<string, unknown>)?.author_id      as string ?? "",
     author_name:    post?.author_name      ?? "",
     author_initials: post?.author_initials ?? "",
     author_role:    post?.author_role      ?? "",
@@ -538,6 +546,8 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
     tags:           post?.tags             ?? [],
     related_tool_slug: post?.related_tool_slug ?? "",
     richtext_body:  initialRichtext,
+    intro_html:     (post as Record<string, unknown>)?.intro_html     as string ?? "",
+    conclusion_html: (post as Record<string, unknown>)?.conclusion_html as string ?? "",
     body_blocks:    specialBlocks as BodyBlock[],
     list_items:     (post?.list_items      ?? []) as ListItem[],
     focus_keyword:   (post as Record<string, unknown>)?.focus_keyword   as string ?? "",
@@ -566,6 +576,9 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
           published_at: form.published_at ? new Date(form.published_at).toISOString() : null,
           upvote_count: Number(form.upvote_count),
           related_tool_slug: form.related_tool_slug || null,
+          author_id: form.author_id || null,
+          intro_html: form.intro_html || null,
+          conclusion_html: form.conclusion_html || null,
         };
         if (post) {
           await saveBlogPost(post.id, payload);
@@ -677,6 +690,55 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
       {/* ── Author ── */}
       <div style={sectionStyle}>
         <p style={sectionTitle}>Author</p>
+
+        {authors.length > 0 && (
+          <div style={{ marginBottom: 20, padding: 14, background: "var(--bg3)", borderRadius: 10, border: "1px solid var(--border2)" }}>
+            <label style={{ ...labelStyle, marginBottom: 8 }}>Select author (auto-fills fields below)</label>
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <select
+                value={form.author_id}
+                onChange={(e) => {
+                  const id = e.target.value;
+                  upd("author_id", id);
+                  if (id) {
+                    const a = authors.find((x) => x.id === id);
+                    if (a) {
+                      upd("author_name", a.name);
+                      upd("author_initials", a.initials);
+                      upd("author_role", a.role ?? "");
+                      upd("author_bio", a.bio ?? "");
+                    }
+                  }
+                }}
+                style={{ ...{ width: "100%", padding: "9px 12px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border2)", color: "var(--text)", fontSize: 13, fontFamily: "var(--font-inter)", outline: "none", boxSizing: "border-box" as const }, cursor: "pointer", appearance: "none" as const }}
+              >
+                <option value="">— No author / manual entry —</option>
+                {authors.map((a) => (
+                  <option key={a.id} value={a.id}>{a.name}{a.role ? ` · ${a.role}` : ""}</option>
+                ))}
+              </select>
+              {form.author_id && (
+                <button
+                  onClick={() => {
+                    const a = authors.find((x) => x.id === form.author_id);
+                    if (a) {
+                      upd("author_name", a.name);
+                      upd("author_initials", a.initials);
+                      upd("author_role", a.role ?? "");
+                      upd("author_bio", a.bio ?? "");
+                    }
+                  }}
+                  style={{ padding: "9px 14px", borderRadius: 8, border: "1px solid var(--border2)", color: "var(--text2)", background: "transparent", fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>
+                  ↺ Sync
+                </button>
+              )}
+            </div>
+            <p style={{ fontSize: 11, color: "var(--text3)", margin: "6px 0 0" }}>
+              Fields below are saved on the post. Edit them to override the author profile for this post only.
+            </p>
+          </div>
+        )}
+
         <Row cols="1fr 100px 1fr">
           <Field label="Author name"><Input value={form.author_name} placeholder="Sarah Chen" onChange={(v) => upd("author_name", v)} /></Field>
           <Field label="Initials"><Input value={form.author_initials} placeholder="SC" onChange={(v) => upd("author_initials", v.toUpperCase().slice(0, 2))} /></Field>
@@ -719,15 +781,46 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
           </div>
         </>
       ) : (
-        <div style={sectionStyle}>
-          <p style={sectionTitle}>
-            {form.post_type === "best" ? "Best For — Ranked Tool Items" : "Listicle Items"}
-          </p>
-          <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 16, marginTop: -12 }}>
-            Each item is a ranked tool card. Ranks are auto-numbered by order — drag (use arrows) to reorder and ranks update automatically.
-          </p>
-          <ListItemsEditor items={form.list_items} onChange={(v) => upd("list_items", v)} />
-        </div>
+        <>
+          {/* Intro */}
+          <div style={sectionStyle}>
+            <p style={{ ...sectionTitle, marginBottom: 16 }}>Introduction</p>
+            <p style={{ fontSize: 12, color: "var(--text3)", margin: "-8px 0 14px" }}>
+              Shown at the top of the listicle before the comparison table. Use it to hook the reader and explain your selection criteria.
+            </p>
+            <RichTextEditor
+              value={form.intro_html}
+              onChange={(v) => upd("intro_html", v)}
+              placeholder="Write a compelling introduction to this listicle…"
+              minHeight={160}
+            />
+          </div>
+
+          {/* List items */}
+          <div style={sectionStyle}>
+            <p style={sectionTitle}>
+              {form.post_type === "best" ? "Best For — Ranked Tool Items" : "Listicle Items"}
+            </p>
+            <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 16, marginTop: -12 }}>
+              Each item is a ranked tool card. Ranks are auto-numbered by order — use arrows to reorder.
+            </p>
+            <ListItemsEditor items={form.list_items} onChange={(v) => upd("list_items", v)} />
+          </div>
+
+          {/* Conclusion */}
+          <div style={sectionStyle}>
+            <p style={{ ...sectionTitle, marginBottom: 16 }}>Conclusion</p>
+            <p style={{ fontSize: 12, color: "var(--text3)", margin: "-8px 0 14px" }}>
+              Shown after the ranked list. Summarize your findings, give a final recommendation, or link to related posts.
+            </p>
+            <RichTextEditor
+              value={form.conclusion_html}
+              onChange={(v) => upd("conclusion_html", v)}
+              placeholder="Wrap up your listicle with a conclusion and final recommendation…"
+              minHeight={160}
+            />
+          </div>
+        </>
       )}
 
       {/* ── SEO ── */}

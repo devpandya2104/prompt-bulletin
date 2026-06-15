@@ -101,6 +101,30 @@ export async function deleteCategory(id: string) {
   revalidatePath("/", "layout");
 }
 
+// ── Author actions ─────────────────────────────────────────────────
+
+export async function saveAuthor(id: string, data: Record<string, unknown>) {
+  const supabase = await createAdminClient();
+  const { error } = await supabase.from("authors").update(data).eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/authors");
+}
+
+export async function createAuthor(data: Record<string, unknown>) {
+  const supabase = await createAdminClient();
+  const { data: author, error } = await supabase.from("authors").insert(data).select().single();
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/authors");
+  return author as { id: string };
+}
+
+export async function deleteAuthor(id: string) {
+  const supabase = await createAdminClient();
+  const { error } = await supabase.from("authors").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/authors");
+}
+
 // ── Public submission actions (use admin client to bypass RLS) ─────
 
 export async function subscribeToNewsletter(email: string) {

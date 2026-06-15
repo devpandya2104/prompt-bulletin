@@ -105,10 +105,9 @@ function ToolItemCard({ item }: { item: ListItem }) {
           </div>
 
           {/* Description */}
-          <p className="text-[16px] leading-[1.75] mb-5"
-            style={{ fontFamily: "var(--font-lora)", color: "var(--text2)" }}>
-            {item.description}
-          </p>
+          <div className="text-[16px] leading-[1.75] mb-5 pb-prose"
+            style={{ fontFamily: "var(--font-lora)", color: "var(--text2)" }}
+            dangerouslySetInnerHTML={{ __html: item.description }} />
 
           {/* Pros/Cons */}
           <div className="grid sm:grid-cols-2 gap-4 mb-6">
@@ -390,6 +389,14 @@ export default function ListiclePage({ post }: { post: BlogPostDetail }) {
         <div style={{ borderTop: "1px solid var(--border)" }} />
       </div>
 
+      {/* Intro */}
+      {post.intro_html && (
+        <section className="max-w-7xl mx-auto px-6 pt-8 pb-4">
+          <div className="max-w-[820px] mx-auto pb-prose"
+            dangerouslySetInnerHTML={{ __html: post.intro_html }} />
+        </section>
+      )}
+
       {/* Quick comparison table */}
       {items.length > 0 && (
         <section className="max-w-7xl mx-auto px-6 pt-10 pb-10">
@@ -451,6 +458,14 @@ export default function ListiclePage({ post }: { post: BlogPostDetail }) {
           ))}
         </div>
       </section>
+
+      {/* Conclusion */}
+      {post.conclusion_html && (
+        <section className="max-w-7xl mx-auto px-6 py-8">
+          <div className="max-w-[820px] mx-auto pb-prose"
+            dangerouslySetInnerHTML={{ __html: post.conclusion_html }} />
+        </section>
+      )}
 
       {/* Methodology footer */}
       <section className="max-w-7xl mx-auto px-6 pb-14">

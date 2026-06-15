@@ -1,5 +1,16 @@
 import { createClient } from "./supabase/client";
 
+export type Author = {
+  id: string;
+  name: string;
+  initials: string;
+  role: string;
+  bio: string;
+  avatar_url: string | null;
+  sort_order: number;
+  created_at?: string;
+};
+
 export type ToolScore = { label: string; score: number };
 export type ToolFeature = { name: string; included: boolean | string };
 export type PricingTier = { name: string; price: string; period: string; highlight: boolean; features: string[] };
@@ -109,10 +120,13 @@ export type BlogPostDetail = BlogPost & {
   post_type: "article" | "listicle" | "comparison" | "best";
   author_role: string | null;
   author_bio: string | null;
+  author_id: string | null;
   tags: string[];
   body_blocks: BodyBlock[];
   list_items: ListItem[];
   related_tool_slug: string | null;
+  intro_html: string | null;
+  conclusion_html: string | null;
 };
 
 export async function getCategories(): Promise<Category[]> {
