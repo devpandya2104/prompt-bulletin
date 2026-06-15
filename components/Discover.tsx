@@ -18,11 +18,13 @@ export default function Discover({ tools, categories, config = DEFAULT_DISCOVER 
   categories: Category[];
   config?: DiscoverConfig;
 }) {
-  const [sort,        setSort]        = useState("upvotes");
-  const [filterCat,   setFilterCat]   = useState("all");
-  const [filterPrice, setFilterPrice] = useState("all");
-  const [query,       setQuery]       = useState("");
-  const [userUpvotes, setUserUpvotes] = useState<string[]>([]);
+  const ITEMS_PER_PAGE = 12;
+  const [sort,         setSort]        = useState("upvotes");
+  const [filterCat,    setFilterCat]   = useState("all");
+  const [filterPrice,  setFilterPrice] = useState("all");
+  const [query,        setQuery]       = useState("");
+  const [userUpvotes,  setUserUpvotes] = useState<string[]>([]);
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
   useEffect(() => {
     const loadUpvotes = async () => {
@@ -45,6 +47,9 @@ export default function Discover({ tools, categories, config = DEFAULT_DISCOVER 
     return () => window.removeEventListener("hero-search", onHeroSearch);
   }, []);
 
+  // Reset visible count when filters/sort change
+  useEffect(() => { setVisibleCount(ITEMS_PER_PAGE); }, [sort, filterCat, filterPrice, query]);
+
   const filtered = tools
     .filter((t) => {
       if (!query.trim()) return true;
@@ -64,7 +69,12 @@ export default function Discover({ tools, categories, config = DEFAULT_DISCOVER 
     .sort((a, b) => {
       if (sort === "rating")  return b.rating - a.rating;
       if (sort === "newest")  return new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime();
-      if (sort === "trending") return b.upvote_count - a.upvote_count;
+      if (sort === "trending") {
+        const now = Date.now();
+        const hoursA = (now - new Date(a.created_at ?? 0).getTime()) / 3_600_000;
+        const hoursB = (now - new Date(b.created_at ?? 0).getTime()) / 3_600_000;
+        return b.upvote_count / Math.pow(hoursB + 2, 1.5) - a.upvote_count / Math.pow(hoursA + 2, 1.5);
+      }
       return b.upvote_count - a.upvote_count;
     });
 
@@ -136,18 +146,22 @@ export default function Discover({ tools, categories, config = DEFAULT_DISCOVER 
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map((tool) => <ToolCard key={tool.id} tool={tool} userUpvotes={userUpvotes} />)}
+            {filtered.slice(0, visibleCount).map((tool) => <ToolCard key={tool.id} tool={tool} userUpvotes={userUpvotes} />)}
           </div>
         )}
 
-        <div className="text-center mt-10">
-          <button className="px-8 py-3 rounded-xl text-sm font-medium cursor-pointer transition-all duration-150"
-            style={{ background: "transparent", border: "1px solid var(--border2)", color: "var(--text2)" }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text2)"; e.currentTarget.style.borderColor = "var(--border2)"; }}>
-            Load more tools
-          </button>
-        </div>
+        {filtered.length > visibleCount && (
+          <div className="text-center mt-10">
+            <button
+              onClick={() => setVisibleCount((c) => c + ITEMS_PER_PAGE)}
+              className="px-8 py-3 rounded-xl text-sm font-medium cursor-pointer transition-all duration-150"
+              style={{ background: "transparent", border: "1px solid var(--border2)", color: "var(--text2)" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text2)"; e.currentTarget.style.borderColor = "var(--border2)"; }}>
+              Load more tools ({filtered.length - visibleCount} remaining)
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

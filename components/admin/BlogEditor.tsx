@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { saveBlogPost, createBlogPost } from "@/app/admin/actions";
 import ImageUpload from "./ImageUpload";
 import type { BlogPostDetail, BodyBlock, ListItem } from "@/lib/queries";
+import { BLOG_CATEGORIES } from "@/lib/site-config";
 
 // ── Shared styles ─────────────────────────────────────────────────
 const inputStyle: React.CSSProperties = {
@@ -493,7 +494,6 @@ function ListItemsEditor({ items, onChange }: { items: ListItem[]; onChange: (v:
 }
 
 // ── Main BlogEditor ───────────────────────────────────────────────
-const CATEGORIES = ["Deep Dive", "Roundup", "Guide", "News", "Opinion"];
 
 function postUrl(slug: string, postType: string): string {
   if (postType === "comparison") return `/compare/${slug}`;
@@ -635,7 +635,7 @@ export default function BlogEditor({ post }: { post: BlogPostDetail | null }) {
         <Row cols="1fr 1fr 1fr">
           <Field label="Category">
             <Select value={form.category} onChange={(v) => upd("category", v)}
-              options={CATEGORIES.map((c) => ({ value: c, label: c }))} />
+              options={BLOG_CATEGORIES.map((c) => ({ value: c, label: c }))} />
           </Field>
           <Field label="Post type → URL">
             <Select value={form.post_type} onChange={(v) => upd("post_type", v as FormState["post_type"])}

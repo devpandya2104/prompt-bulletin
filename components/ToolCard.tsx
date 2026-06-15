@@ -103,12 +103,21 @@ export default function ToolCard({ tool, userUpvotes }: { tool: Tool; userUpvote
           <span className="text-xs" style={{ color: "var(--text3)" }}>|</span>
           <span className="text-xs font-medium" style={{ color: "var(--text3)" }}>{tool.pricing}</span>
         </div>
-        <div className="flex gap-1">
+        <div className="flex items-center gap-1.5">
           {tool.platforms.slice(0, 2).map((p) => (
             <span key={p} className="text-[11px] px-2 py-0.5 rounded-md font-medium" style={{ background: "rgba(255,255,255,0.05)", color: "var(--text3)" }}>{p}</span>
           ))}
           {tool.platforms.length > 2 && (
             <span className="text-[11px] px-2 py-0.5 rounded-md" style={{ background: "rgba(255,255,255,0.05)", color: "var(--text3)" }}>+{tool.platforms.length - 2}</span>
+          )}
+          {tool.website_url && (
+            <a href={tool.website_url} target="_blank" rel="nofollow noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-[11px] px-2 py-0.5 rounded-md font-medium no-underline transition-colors"
+              style={{ background: "var(--accent-dim)", color: "var(--accent)", border: "1px solid oklch(72% 0.19 52 / 0.3)" }}
+              title={`Visit ${tool.name}`}>
+              ↗ Visit
+            </a>
           )}
         </div>
       </div>

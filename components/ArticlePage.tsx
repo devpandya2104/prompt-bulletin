@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { BlogPostDetail, BodyBlock } from "@/lib/queries";
+import { BLOG_CATEGORY_COLORS } from "@/lib/site-config";
 
 // ── Reading progress bar ──────────────────────────────────────────
 function ReadingProgress() {
@@ -176,18 +177,13 @@ function Block({ block }: { block: BodyBlock }) {
 
 // ── Category badge colour ─────────────────────────────────────────
 function categoryColor(cat: string) {
-  const map: Record<string, string> = {
-    "Deep Dive": "var(--accent)",
-    "Roundup":   "var(--accent2)",
-    "Guide":     "var(--green)",
-    "News":      "var(--red)",
-    "Opinion":   "oklch(72% 0.19 290)",
-  };
-  return map[cat] ?? "var(--text3)";
+  return BLOG_CATEGORY_COLORS[cat] ?? "var(--text3)";
 }
 
+type RelatedTool = { id: string; name: string; slug: string; tagline?: string | null; description: string; rating: number; pricing: string; logo_url?: string | null };
+
 // ── Main component ────────────────────────────────────────────────
-export default function ArticlePage({ post }: { post: BlogPostDetail }) {
+export default function ArticlePage({ post, relatedTool }: { post: BlogPostDetail; relatedTool?: RelatedTool | null }) {
   const [activeId,   setActiveId]   = useState("");
   const [upvoted,    setUpvoted]    = useState(false);
   const [upvotes,    setUpvotes]    = useState(post.upvote_count);
@@ -219,6 +215,23 @@ export default function ArticlePage({ post }: { post: BlogPostDetail }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post.slug]);
 
+  // Check if user already upvoted this post
+  useEffect(() => {
+    const checkUpvote = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("user_blog_upvotes")
+        .select("post_id")
+        .eq("user_id", user.id)
+        .eq("post_id", post.id)
+        .maybeSingle();
+      if (data) setUpvoted(true);
+    };
+    checkUpvote();
+  }, [post.id]);
+
   const handleUpvote = async () => {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -226,8 +239,14 @@ export default function ArticlePage({ post }: { post: BlogPostDetail }) {
     const next = !upvoted;
     setUpvoted(next);
     setUpvotes((n) => n + (next ? 1 : -1));
-    const col = next ? "upvote_count + 1" : "upvote_count - 1";
-    await supabase.rpc(next ? "increment_blog_upvote" : "decrement_blog_upvote", { post_id: post.id });
+    if (next) {
+      const { error } = await supabase.from("user_blog_upvotes").insert({ user_id: user.id, post_id: post.id });
+      if (error) { setUpvoted(false); setUpvotes((n) => n - 1); return; }
+      await supabase.rpc("increment_blog_upvote", { post_id: post.id });
+    } else {
+      await supabase.from("user_blog_upvotes").delete().eq("user_id", user.id).eq("post_id", post.id);
+      await supabase.rpc("decrement_blog_upvote", { post_id: post.id });
+    }
   };
 
   const handleShare = async () => {
@@ -408,8 +427,41 @@ export default function ArticlePage({ post }: { post: BlogPostDetail }) {
           </div>
         </article>
 
-        {/* Right column (empty — reserved for future ads/widgets) */}
-        <div className="hidden lg:block" />
+        {/* Right column — related tool widget */}
+        <div className="hidden lg:block">
+          {relatedTool && (
+            <div className="sticky top-24">
+              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "var(--text3)" }}>
+                Featured Tool
+              </p>
+              <div className="rounded-xl p-4" style={{ background: "var(--bg2)", border: "1px solid var(--border)" }}>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+                  style={{ background: "var(--bg3)", border: "1px solid var(--border2)" }}>
+                  {relatedTool.logo_url ? (
+                    <img src={relatedTool.logo_url} alt={relatedTool.name} className="w-8 h-8 rounded-lg object-contain" />
+                  ) : (
+                    <span style={{ fontFamily: "var(--font-space)", fontSize: 18, fontWeight: 700, color: "var(--accent)" }}>
+                      {relatedTool.name[0]}
+                    </span>
+                  )}
+                </div>
+                <p className="font-bold text-sm mb-1" style={{ color: "var(--text)", fontFamily: "var(--font-space)" }}>{relatedTool.name}</p>
+                <p className="text-xs leading-relaxed mb-3" style={{ color: "var(--text2)" }}>
+                  {relatedTool.tagline ?? relatedTool.description}
+                </p>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs font-semibold" style={{ color: "var(--accent)" }}>★ {relatedTool.rating}</span>
+                  <span className="text-xs" style={{ color: "var(--text3)" }}>{relatedTool.pricing}</span>
+                </div>
+                <Link href={`/tools/${relatedTool.slug}`}
+                  className="block text-center px-4 py-2 rounded-lg text-xs font-semibold no-underline transition-opacity hover:opacity-85"
+                  style={{ background: "var(--accent)", color: "#000" }}>
+                  View Full Review →
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );

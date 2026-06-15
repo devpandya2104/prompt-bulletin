@@ -53,6 +53,7 @@ export type Tool = {
   category_id: string | null;
   pricing: string;
   website_url: string | null;
+  logo_url?: string | null;
   platforms: string[];
   rating: number;
   upvote_count: number;
@@ -62,6 +63,7 @@ export type Tool = {
   tag_type: "editor" | "top" | null;
   categories?: { name: string; slug: string } | null;
   created_at?: string | null;
+  updated_at?: string | null;
 };
 
 export type BlogPost = {

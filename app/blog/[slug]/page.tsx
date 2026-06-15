@@ -81,6 +81,18 @@ export default async function BlogArticlePage(
   const typedPost = post as BlogPostDetail;
   const canonicalUrl = `${SITE_URL}/blog/${slug}`;
 
+  let relatedTool = null;
+  if (typedPost.related_tool_slug) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("tools")
+      .select("id, name, slug, tagline, description, rating, pricing, logo_url")
+      .eq("slug", typedPost.related_tool_slug)
+      .eq("is_published", true)
+      .single();
+    relatedTool = data;
+  }
+
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": typedPost.post_type === "listicle" ? "Article" : "BlogPosting",
@@ -122,7 +134,7 @@ export default async function BlogArticlePage(
       {typedPost.post_type === "listicle" ? (
         <ListiclePage post={typedPost} />
       ) : (
-        <ArticlePage post={typedPost} />
+        <ArticlePage post={typedPost} relatedTool={relatedTool} />
       )}
       <Footer />
     </>

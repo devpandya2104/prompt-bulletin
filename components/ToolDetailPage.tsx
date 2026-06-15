@@ -144,8 +144,14 @@ function ToolHero({ tool, upvoted, setUpvoted, upvoteCount, setUpvoteCount, save
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 20 }}>
               <div style={{ width: 72, height: 72, borderRadius: 18, background: "var(--bg3)", border: "1px solid var(--border2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 30% 30%, oklch(72% 0.19 52 / 0.18), transparent 70%)" }} />
-                <span style={{ fontFamily: "var(--font-space)", fontSize: 28, fontWeight: 700, color: "var(--accent)", position: "relative" }}>{tool.name[0]}</span>
+                {tool.logo_url ? (
+                  <img src={tool.logo_url} alt={tool.name} style={{ width: 52, height: 52, objectFit: "contain", borderRadius: 10 }} />
+                ) : (
+                  <>
+                    <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 30% 30%, oklch(72% 0.19 52 / 0.18), transparent 70%)" }} />
+                    <span style={{ fontFamily: "var(--font-space)", fontSize: 28, fontWeight: 700, color: "var(--accent)", position: "relative" }}>{tool.name[0]}</span>
+                  </>
+                )}
               </div>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
@@ -170,7 +176,7 @@ function ToolHero({ tool, upvoted, setUpvoted, upvoteCount, setUpvoteCount, save
               <span style={{ fontSize: 13, color: "var(--text2)", fontWeight: 500 }}>{categoryName}</span>
               <span style={{ color: "var(--border2)" }}>|</span>
               <span style={{ fontSize: 13, color: "var(--text3)" }}>
-                Updated {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                Updated {new Date(tool.updated_at ?? Date.now()).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
               </span>
             </div>
 

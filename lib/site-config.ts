@@ -231,6 +231,18 @@ export const DEFAULT_SEO_SYSTEM: SeoSystemConfig = {
   twitterHandle: "",
 };
 
+// ── Blog categories — single source of truth ──────────────────────────────────
+export const BLOG_CATEGORIES = ["Deep Dive", "Roundup", "Guide", "News", "Opinion"] as const;
+export type BlogCategory = typeof BLOG_CATEGORIES[number];
+
+export const BLOG_CATEGORY_COLORS: Record<string, string> = {
+  "Deep Dive": "var(--accent)",
+  "Roundup":   "var(--accent2)",
+  "Guide":     "var(--green)",
+  "News":      "var(--red)",
+  "Opinion":   "oklch(72% 0.19 290)",
+};
+
 export const DEFAULT_CONFIG: SiteConfig = {
   hero: DEFAULT_HERO,
   discover: DEFAULT_DISCOVER,

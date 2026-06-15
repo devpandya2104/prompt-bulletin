@@ -1,8 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { BlogPost } from "@/lib/queries";
+import { BLOG_CATEGORIES } from "@/lib/site-config";
 
 // ── Category → accent hue ───────────────────────────────────────────────────
 const catHue: Record<string, string> = {
@@ -189,19 +191,23 @@ function SidebarNewsletter() {
 }
 
 // ── Main blog page ────────────────────────────────────────────────────────────
-const CATEGORIES = ["All", "Deep Dive", "Roundup", "Guide", "News", "Opinion"];
-const TOPICS = ["Writing", "Code", "Image Gen", "Video", "Research", "Productivity", "Opinion", "News", "Roundup", "Guide"];
+const ALL_CATEGORIES = ["All", ...BLOG_CATEGORIES];
 
-export default function BlogPage({ posts, currentPage = 1, totalPages = 1 }: { posts: BlogPost[]; currentPage?: number; totalPages?: number }) {
-  const [activeCategory, setActiveCategory] = useState("All");
+export default function BlogPage({ posts, currentPage = 1, totalPages = 1, activeCategory = "All" }: { posts: BlogPost[]; currentPage?: number; totalPages?: number; activeCategory?: string }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
 
   const featured = posts[0];
   const remaining = posts.slice(1).filter(p =>
-    (activeCategory === "All" || p.category === activeCategory) &&
-    (query === "" || p.title.toLowerCase().includes(query.toLowerCase()) || p.excerpt.toLowerCase().includes(query.toLowerCase()))
+    query === "" || p.title.toLowerCase().includes(query.toLowerCase()) || p.excerpt.toLowerCase().includes(query.toLowerCase())
   );
+
+  const handleCategoryChange = (cat: string) => {
+    const params = new URLSearchParams();
+    if (cat !== "All") params.set("category", cat);
+    router.push(`/blog${params.toString() ? `?${params}` : ""}`);
+  };
 
   const trending = [...posts].sort((a, b) => b.upvote_count - a.upvote_count).slice(0, 4);
 
@@ -235,15 +241,15 @@ export default function BlogPage({ posts, currentPage = 1, totalPages = 1 }: { p
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px" }}>
         {/* Category tabs */}
         <div style={{ display: "flex", gap: 4, padding: "20px 0", overflowX: "auto", borderBottom: "1px solid var(--border)", marginBottom: 48 }}>
-          {CATEGORIES.map(cat => (
-            <button key={cat} onClick={() => setActiveCategory(cat)} style={{ padding: "7px 18px", borderRadius: 100, fontSize: 13, fontWeight: 500, background: activeCategory === cat ? "var(--accent)" : "transparent", border: `1px solid ${activeCategory === cat ? "var(--accent)" : "var(--border)"}`, color: activeCategory === cat ? "#000" : "var(--text2)", cursor: "pointer", fontFamily: "var(--font-inter)", transition: "all 0.15s", whiteSpace: "nowrap" }}>
+          {ALL_CATEGORIES.map(cat => (
+            <button key={cat} onClick={() => handleCategoryChange(cat)} style={{ padding: "7px 18px", borderRadius: 100, fontSize: 13, fontWeight: 500, background: activeCategory === cat ? "var(--accent)" : "transparent", border: `1px solid ${activeCategory === cat ? "var(--accent)" : "var(--border)"}`, color: activeCategory === cat ? "#000" : "var(--text2)", cursor: "pointer", fontFamily: "var(--font-inter)", transition: "all 0.15s", whiteSpace: "nowrap" }}>
               {cat}
             </button>
           ))}
         </div>
 
-        {/* Featured post (only when unfiltered) */}
-        {activeCategory === "All" && query === "" && featured && (
+        {/* Featured post */}
+        {query === "" && featured && (
           <div style={{ marginBottom: 48 }}>
             <FeaturedPost post={featured} />
           </div>
@@ -325,8 +331,8 @@ export default function BlogPage({ posts, currentPage = 1, totalPages = 1 }: { p
             <div style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 16, padding: 20 }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14 }}>Topics</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                {TOPICS.map(t => (
-                  <button key={t} onClick={() => { setActiveCategory(CATEGORIES.includes(t) ? t : "All"); }} style={{ padding: "5px 12px", borderRadius: 100, background: "transparent", border: "1px solid var(--border)", color: "var(--text3)", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-inter)", transition: "all 0.15s" }}
+                {BLOG_CATEGORIES.map(t => (
+                  <button key={t} onClick={() => handleCategoryChange(t)} style={{ padding: "5px 12px", borderRadius: 100, background: "transparent", border: "1px solid var(--border)", color: "var(--text3)", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-inter)", transition: "all 0.15s" }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border2)"; (e.currentTarget as HTMLElement).style.color = "var(--text2)"; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; (e.currentTarget as HTMLElement).style.color = "var(--text3)"; }}>
                     {t}

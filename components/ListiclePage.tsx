@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { BlogPostDetail, ListItem } from "@/lib/queries";
+import { BLOG_CATEGORY_COLORS } from "@/lib/site-config";
 
 // ── Reading progress ──────────────────────────────────────────────
 function ReadingProgress() {
@@ -48,14 +49,7 @@ function rankStyle(rank: number): { color: string; bg: string } {
 
 // ── Category badge colour ─────────────────────────────────────────
 function categoryColor(cat: string) {
-  const map: Record<string, string> = {
-    "Deep Dive": "var(--accent)",
-    "Roundup":   "var(--accent2)",
-    "Guide":     "var(--green)",
-    "News":      "var(--red)",
-    "Opinion":   "oklch(72% 0.19 290)",
-  };
-  return map[cat] ?? "var(--text3)";
+  return BLOG_CATEGORY_COLORS[cat] ?? "var(--text3)";
 }
 
 // ── Tool item card ────────────────────────────────────────────────
@@ -231,6 +225,23 @@ export default function ListiclePage({ post }: { post: BlogPostDetail }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post.slug]);
 
+  // Check if user already upvoted
+  useEffect(() => {
+    const checkUpvote = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("user_blog_upvotes")
+        .select("post_id")
+        .eq("user_id", user.id)
+        .eq("post_id", post.id)
+        .maybeSingle();
+      if (data) setUpvoted(true);
+    };
+    checkUpvote();
+  }, [post.id]);
+
   const handleUpvote = async () => {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -238,7 +249,14 @@ export default function ListiclePage({ post }: { post: BlogPostDetail }) {
     const next = !upvoted;
     setUpvoted(next);
     setUpvotes((n) => n + (next ? 1 : -1));
-    await supabase.rpc(next ? "increment_blog_upvote" : "decrement_blog_upvote", { post_id: post.id });
+    if (next) {
+      const { error } = await supabase.from("user_blog_upvotes").insert({ user_id: user.id, post_id: post.id });
+      if (error) { setUpvoted(false); setUpvotes((n) => n - 1); return; }
+      await supabase.rpc("increment_blog_upvote", { post_id: post.id });
+    } else {
+      await supabase.from("user_blog_upvotes").delete().eq("user_id", user.id).eq("post_id", post.id);
+      await supabase.rpc("decrement_blog_upvote", { post_id: post.id });
+    }
   };
 
   const handleShare = async () => {

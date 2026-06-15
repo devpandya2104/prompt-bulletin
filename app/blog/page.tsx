@@ -34,21 +34,28 @@ const PER_PAGE = 9;
 export default async function BlogIndexPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; category?: string }>;
 }) {
-  const { page: pageParam } = await searchParams;
+  const { page: pageParam, category } = await searchParams;
+  const activeCategory = category ?? "All";
   const page = Math.max(1, parseInt(pageParam ?? "1", 10));
   const from = (page - 1) * PER_PAGE;
   const to   = from + PER_PAGE - 1;
 
   const supabase = await createClient();
-  const { data: posts, count } = await supabase
+  let query = supabase
     .from("blog_posts")
     .select("id, title, slug, excerpt, author_name, author_initials, category, read_time, cover_image_url, upvote_count, is_published, published_at", { count: "exact" })
     .eq("is_published", true)
+    .in("post_type", ["article", "listicle"])
     .order("published_at", { ascending: false })
     .range(from, to);
 
+  if (activeCategory !== "All") {
+    query = query.eq("category", activeCategory);
+  }
+
+  const { data: posts, count } = await query;
   const totalPages = Math.ceil((count ?? 0) / PER_PAGE);
 
   return (
@@ -58,6 +65,7 @@ export default async function BlogIndexPage({
         posts={(posts ?? []) as BlogPost[]}
         currentPage={page}
         totalPages={totalPages}
+        activeCategory={activeCategory}
       />
       <Footer />
     </>
