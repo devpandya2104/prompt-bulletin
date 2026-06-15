@@ -1,5 +1,5 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { saveSiteConfig } from "@/app/admin/actions";
 import type { SeoSystemConfig } from "@/lib/site-config";
 
@@ -28,6 +28,18 @@ export default function SEOPanel({ seoSystem, toolCount, blogCount }: Props) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [, startTransition] = useTransition();
+  const [liveRobots, setLiveRobots] = useState<string | null>(null);
+  const [loadingRobots, setLoadingRobots] = useState(false);
+
+  useEffect(() => {
+    if (tab === "robots" && liveRobots === null) {
+      setLoadingRobots(true);
+      fetch("/robots.txt")
+        .then((r) => r.text())
+        .then((text) => { setLiveRobots(text); setLoadingRobots(false); })
+        .catch(() => { setLiveRobots("(failed to load)"); setLoadingRobots(false); });
+    }
+  }, [tab, liveRobots]);
 
   const totalUrls = 2 + toolCount + blogCount; // static + tools + posts
 
@@ -147,72 +159,91 @@ export default function SEOPanel({ seoSystem, toolCount, blogCount }: Props) {
       {/* ── Robots tab ── */}
       {tab === "robots" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+          {/* Live preview */}
           <div style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 24px" }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>Always blocked (hardcoded)</p>
-            <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 12 }}>These paths are always disallowed in robots.txt and noindexed. You cannot remove them.</p>
-            {["/admin", "/admin/"].map((p) => (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", margin: 0 }}>
+                  Live robots.txt
+                  <span style={{ marginLeft: 8, display: "inline-block", width: 7, height: 7, borderRadius: "50%", background: "var(--green)", verticalAlign: "middle" }} />
+                </p>
+                <p style={{ fontSize: 12, color: "var(--text3)", margin: "3px 0 0" }}>
+                  Fetched live from <code style={{ background: "var(--bg3)", padding: "1px 5px", borderRadius: 3 }}>/robots.txt</code>
+                </p>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={() => { setLiveRobots(null); setLoadingRobots(true); fetch("/robots.txt").then(r => r.text()).then(t => { setLiveRobots(t); setLoadingRobots(false); }).catch(() => { setLiveRobots("(failed to load)"); setLoadingRobots(false); }); }}
+                  style={{ padding: "6px 12px", borderRadius: 7, border: "1px solid var(--border2)", background: "transparent", color: "var(--text2)", fontSize: 12, cursor: "pointer" }}>
+                  ↺ Refresh
+                </button>
+                <a href="/robots.txt" target="_blank" rel="noopener noreferrer"
+                  style={{ padding: "6px 12px", borderRadius: 7, border: "1px solid var(--accent)", color: "var(--accent)", fontSize: 12, textDecoration: "none", fontWeight: 600 }}>
+                  Open ↗
+                </a>
+              </div>
+            </div>
+            <pre style={{
+              background: "var(--bg3)", borderRadius: 8, padding: "14px 16px",
+              fontSize: 12, color: "var(--text2)", overflow: "auto", lineHeight: 1.85,
+              margin: 0, minHeight: 120, fontFamily: "monospace",
+              borderLeft: "3px solid var(--accent)",
+            }}>
+              {loadingRobots ? (
+                <span style={{ color: "var(--text3)" }}>Loading…</span>
+              ) : (
+                (liveRobots ?? "").split("\n").map((line, i) => {
+                  const isComment = line.trim().startsWith("#");
+                  const isDisallow = line.startsWith("Disallow");
+                  const isAllow = line.startsWith("Allow");
+                  const isSignal = line.startsWith("Content-Signal");
+                  const isSitemap = line.startsWith("Sitemap");
+                  const color = isComment ? "var(--text3)"
+                    : isDisallow ? "oklch(65% 0.2 25)"
+                    : isAllow ? "var(--green)"
+                    : isSignal ? "var(--accent2)"
+                    : isSitemap ? "var(--accent)"
+                    : "var(--text2)";
+                  return <span key={i} style={{ color, display: "block" }}>{line || " "}</span>;
+                })
+              )}
+            </pre>
+          </div>
+
+          {/* Info about the file */}
+          <div style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 24px" }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>About the Content-Signal header</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                { signal: "search=yes",    label: "Search indexing", desc: "Allows Google, Bing etc. to index and show snippets" },
+                { signal: "ai-input=yes",  label: "AI answers",      desc: "Allows ChatGPT, Perplexity etc. to cite your content" },
+                { signal: "ai-train=yes",  label: "AI training",     desc: "Allows AI companies to use your content for training" },
+              ].map((row) => (
+                <div key={row.signal} style={{ display: "grid", gridTemplateColumns: "120px 140px 1fr", gap: 12, padding: "8px 12px", borderRadius: 8, background: "rgba(255,255,255,0.02)", fontSize: 12, alignItems: "center" }}>
+                  <code style={{ color: "var(--accent2)" }}>{row.signal}</code>
+                  <span style={{ color: "var(--text)", fontWeight: 500 }}>{row.label}</span>
+                  <span style={{ color: "var(--text3)" }}>{row.desc}</span>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize: 11, color: "var(--text3)", margin: "12px 0 0", lineHeight: 1.6 }}>
+              To change these settings, edit <code style={{ background: "var(--bg3)", padding: "1px 5px", borderRadius: 3 }}>public/robots.txt</code> in the codebase and redeploy.
+            </p>
+          </div>
+
+          {/* Blocked paths */}
+          <div style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 24px" }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>Blocked paths</p>
+            <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 12 }}>These paths are disallowed in robots.txt. Edit the file to add more.</p>
+            {["/admin/", "/admin"].map((p) => (
               <div key={p} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 8, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", marginBottom: 6 }}>
-                <span style={{ fontSize: 11, color: "#ef4444" }}>✕ Blocked</span>
+                <span style={{ fontSize: 11, color: "#ef4444" }}>✕</span>
                 <code style={{ fontSize: 12, color: "var(--text2)", flex: 1 }}>{p}</code>
-                <span style={{ fontSize: 11, color: "var(--text3)" }}>Hardcoded</span>
+                <span style={{ fontSize: 11, color: "var(--text3)" }}>Disallowed</span>
               </div>
             ))}
           </div>
 
-          <div style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 24px" }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>Custom noindex paths</p>
-            <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 16, lineHeight: 1.6 }}>
-              Add paths you want excluded from search engines. These appear as <code style={{ background: "var(--bg3)", padding: "1px 5px", borderRadius: 3 }}>Disallow</code> rules in <code style={{ background: "var(--bg3)", padding: "1px 5px", borderRadius: 3 }}>/robots.txt</code>.
-            </p>
-
-            {cfg.noindexPaths.length > 0 ? (
-              <div style={{ marginBottom: 12, display: "flex", flexDirection: "column", gap: 6 }}>
-                {cfg.noindexPaths.map((p) => (
-                  <div key={p} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 8, background: "rgba(255,255,255,0.02)", border: "1px solid var(--border)" }}>
-                    <span style={{ fontSize: 11, color: "var(--text3)" }}>✕</span>
-                    <code style={{ fontSize: 12, color: "var(--text2)", flex: 1 }}>{p}</code>
-                    <button onClick={() => removePath(p)}
-                      style={{ padding: "3px 8px", borderRadius: 6, border: "1px solid var(--border)", background: "transparent", color: "#ef4444", cursor: "pointer", fontSize: 11 }}>
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 12 }}>No custom paths added yet.</p>
-            )}
-
-            <div style={{ display: "flex", gap: 8 }}>
-              <input value={newPath} onChange={(e) => setNewPath(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addPath()}
-                placeholder="/secret-page or /internal/*"
-                style={{ ...inp, flex: 1 }} />
-              <button onClick={addPath}
-                style={{ padding: "9px 16px", borderRadius: 8, background: "var(--accent)", color: "#000", border: "none", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
-                + Add path
-              </button>
-            </div>
-          </div>
-
-          <div style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 24px" }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>robots.txt preview</p>
-            <pre style={{ background: "var(--bg3)", borderRadius: 8, padding: "12px 16px", fontSize: 12, color: "var(--text2)", overflow: "auto", lineHeight: 1.8, margin: 0 }}>
-{`User-agent: *
-Allow: /
-Disallow: /admin/
-Disallow: /admin${cfg.noindexPaths.map((p) => `\nDisallow: ${p}`).join("")}
-
-Sitemap: ${SITE_URL}/sitemap.xml`}
-            </pre>
-            <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-              <a href="/robots.txt" target="_blank" rel="noopener noreferrer"
-                style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid var(--border2)", color: "var(--text2)", fontSize: 12, textDecoration: "none" }}>
-                View live robots.txt ↗
-              </a>
-            </div>
-          </div>
-
-          <SaveBar onSave={handleSave} saving={saving} saved={saved} />
         </div>
       )}
 

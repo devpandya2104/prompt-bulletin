@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   compress: true,
+  async rewrites() {
+    return [
+      // Serve branded SVG when browsers request /favicon.ico (e.g. on robots.txt, sitemap.xml tabs)
+      { source: "/favicon.ico", destination: "/favicon.svg" },
+    ];
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

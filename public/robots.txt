@@ -1,0 +1,16 @@
+# Content Signals
+# search    = Allow search indexing and snippets
+# ai-input  = Allow AI systems to use content in generated answers
+# ai-train  = Allow AI systems to train on content
+
+User-agent: *
+Content-Signal: search=yes,ai-input=yes,ai-train=yes
+
+# Public content
+Allow: /
+
+# Private areas
+Disallow: /admin/
+Disallow: /admin
+
+Sitemap: https://promptbulletin.com/sitemap.xml

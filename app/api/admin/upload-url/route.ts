@@ -44,7 +44,8 @@ export async function POST(req: Request) {
   });
 
   const uploadUrl = await getSignedUrl(r2Client(), command, { expiresIn: 300 });
-  const publicUrl = `${process.env.NEXT_PUBLIC_CDN_URL}/${key}`;
+  const cdnBase = (process.env.NEXT_PUBLIC_CDN_URL ?? "").replace(/\/$/, "");
+  const publicUrl = `${cdnBase}/${key}`;
 
   return NextResponse.json({ uploadUrl, publicUrl });
 }
