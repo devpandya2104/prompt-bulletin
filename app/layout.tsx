@@ -47,6 +47,10 @@ export const metadata: Metadata = {
     creator: "@promptbulletin",
   },
   alternates: { canonical: SITE_URL },
+  other: {
+    "theme-color": "#111114",
+    "msapplication-TileColor": "#111114",
+  },
 };
 
 export default function RootLayout({

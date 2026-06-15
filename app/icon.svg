@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Dark rounded square background -->
+  <rect width="32" height="32" rx="7" fill="#111114"/>
+  <!-- Main sparkle (centered, scaled from admin logo) -->
+  <path d="M16 5L17.9 11.4L24.5 13.5L17.9 15.6L16 22L14.1 15.6L7.5 13.5L14.1 11.4Z" fill="oklch(72% 0.19 52)"/>
+  <!-- Small top-right sparkle -->
+  <path d="M25 8L25.75 10.1L27.75 10.85L25.75 11.6L25 13.7L24.25 11.6L22.25 10.85L24.25 10.1Z" fill="oklch(72% 0.19 52)" opacity="0.52"/>
+  <!-- Small bottom-left sparkle -->
+  <path d="M7 18.5L7.6 20.4L9.5 21L7.6 21.6L7 23.5L6.4 21.6L4.5 21L6.4 20.4Z" fill="oklch(72% 0.19 52)" opacity="0.52"/>
+</svg>
