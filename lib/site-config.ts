@@ -213,15 +213,15 @@ export const DEFAULT_NAVBAR: NavbarConfig = {
 export const DEFAULT_FOOTER: FooterConfig = {
   description: "Curated AI tool reviews and comparisons for marketers, developers, and creators. Independent. Thorough. Trustworthy.",
   columns: [
-    { title: "Discover",  links: [{ label: "Writing & Copy", href: "#" }, { label: "Image Generation", href: "#" }, { label: "Code & Dev", href: "#" }, { label: "Productivity", href: "#" }, { label: "Video & Media", href: "#" }] },
-    { title: "Company",   links: [{ label: "About", href: "/#about" }, { label: "Blog", href: "/blog" }, { label: "Editorial Standards", href: "#" }, { label: "Advertise", href: "#" }] },
-    { title: "Community", links: [{ label: "Submit a Tool", href: "/#submit" }, { label: "Sign Up", href: "#" }, { label: "Newsletter", href: "#" }, { label: "Contact", href: "#" }] },
+    { title: "Discover",  links: [{ label: "Writing & Copy", href: "/#discover" }, { label: "Image Generation", href: "/#discover" }, { label: "Code & Dev", href: "/#discover" }, { label: "Productivity", href: "/#discover" }, { label: "Video & Media", href: "/#discover" }] },
+    { title: "Company",   links: [{ label: "About", href: "/#about" }, { label: "Blog", href: "/blog" }, { label: "Editorial Standards", href: "/editorial-standards" }, { label: "Advertise", href: "/contact" }] },
+    { title: "Community", links: [{ label: "Submit a Tool", href: "/#submit" }, { label: "Sign Up", href: "/auth/sign-up" }, { label: "Contact", href: "/contact" }] },
   ],
   copyright: "© 2026 PromptBulletin. All rights reserved.",
   legalLinks: [
-    { label: "Privacy",     href: "#" },
-    { label: "Terms",       href: "#" },
-    { label: "Disclosures", href: "#" },
+    { label: "Privacy",     href: "/privacy" },
+    { label: "Terms",       href: "/terms" },
+    { label: "Disclosures", href: "/disclosures" },
   ],
 };
 

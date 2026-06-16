@@ -28,7 +28,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!data) return {};
 
   const t = data as ToolDetail & { seo_title?: string; seo_description?: string; seo_og_image?: string; canonical_url?: string };
-  const title       = t.seo_title       ?? `${t.name} Review — PromptBulletin`;
+  const year        = new Date().getFullYear();
+  const titleStr    = t.seo_title       ?? `${t.name} Review (${year}) — PromptBulletin`;
   const description = t.seo_description ?? t.tagline ?? t.description;
   const canonicalUrl = t.canonical_url ?? `${SITE_URL}/tools/${slug}`;
   const ogImage = t.seo_og_image
@@ -36,11 +37,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     : [{ url: "/og-default.png", width: 1200, height: 630, alt: `${t.name} — PromptBulletin` }];
 
   return {
-    title,
+    title: { absolute: titleStr },
     description,
     alternates: { canonical: canonicalUrl },
     openGraph: {
-      title,
+      title: titleStr,
       description,
       type: "website" as const,
       url: canonicalUrl,
@@ -50,7 +51,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     },
     twitter: {
       card: "summary_large_image" as const,
-      title,
+      title: titleStr,
       description,
       site: "@promptbulletin",
       images: ogImage,

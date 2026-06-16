@@ -31,7 +31,7 @@ export async function generateMetadata(
   if (!data) return {};
 
   const post = data as BlogPostDetail & { seo_title?: string; seo_description?: string; seo_og_image?: string; canonical_url?: string };
-  const title       = post.seo_title       ?? `${post.title} — PromptBulletin`;
+  const titleStr    = post.seo_title       ?? `${post.title} — PromptBulletin`;
   const description = post.seo_description ?? post.excerpt;
   const canonicalUrl = post.canonical_url  ?? `${SITE_URL}/compare/${slug}`;
   const ogImage     = post.seo_og_image    ?? post.cover_image_url;
@@ -40,16 +40,16 @@ export async function generateMetadata(
     : [{ url: "/og-default.png", width: 1200, height: 630, alt: post.title }];
 
   return {
-    title, description,
+    title: { absolute: titleStr }, description,
     alternates: { canonical: canonicalUrl },
     authors: post.author_name ? [{ name: post.author_name }] : undefined,
     openGraph: {
-      title, description, type: "article", url: canonicalUrl,
+      title: titleStr, description, type: "article", url: canonicalUrl,
       siteName: "PromptBulletin", locale: "en_US", images,
       ...(post.published_at ? { publishedTime: post.published_at } : {}),
       ...(post.author_name ? { authors: [post.author_name] } : {}),
     },
-    twitter: { card: "summary_large_image", title, description, site: "@promptbulletin", images },
+    twitter: { card: "summary_large_image", title: titleStr, description, site: "@promptbulletin", images },
   };
 }
 
