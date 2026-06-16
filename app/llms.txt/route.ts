@@ -54,7 +54,7 @@ export async function GET() {
     // Group by category name
     const byCategory = new Map<string, typeof tools>();
     for (const tool of tools) {
-      const cat = (tool.categories as { name: string } | null)?.name ?? "Uncategorized";
+      const cat = (tool.categories as unknown as { name: string }[] | null)?.[0]?.name ?? "Uncategorized";
       if (!byCategory.has(cat)) byCategory.set(cat, []);
       byCategory.get(cat)!.push(tool);
     }
