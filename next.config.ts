@@ -3,13 +3,14 @@ import type { NextConfig } from "next";
 const CSP = [
   "default-src 'self'",
   // Next.js needs unsafe-inline for hydration scripts; JSON-LD blocks also need it
-  "script-src 'self' 'unsafe-inline'",
+  // Google Tag Manager also requires its domain to be whitelisted
+  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",
   "style-src 'self' 'unsafe-inline'",
-  // Images from Supabase storage, CDN, Unsplash, AWS
-  "img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in https://images.unsplash.com https://*.amazonaws.com https://cdn.promptbulletin.com",
-  "font-src 'self'",
-  // Supabase API + realtime WebSocket
-  "connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://cdn.promptbulletin.com",
+  // Images from Supabase storage, CDN, Unsplash, AWS, and GA measurement pixel
+  "img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in https://images.unsplash.com https://*.amazonaws.com https://cdn.promptbulletin.com https://www.google-analytics.com",
+  "font-src 'self' https://fonts.gstatic.com",
+  // Supabase API + realtime WebSocket + Google Analytics data collection
+  "connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://cdn.promptbulletin.com https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
