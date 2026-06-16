@@ -75,6 +75,7 @@ function SectionNav() {
     { id: "scores",   label: "Scores"   },
     { id: "pricing",  label: "Pricing"  },
     { id: "features", label: "Features" },
+    { id: "faq",      label: "FAQ"      },
     { id: "reviews",  label: "Reviews"  },
   ];
   const scrollTo = (id: string) => {
@@ -229,10 +230,6 @@ function ToolHero({ tool, upvoted, setUpvoted, upvoteCount, setUpvoteCount, save
           </div>
         </div>
 
-        {/* Tab nav */}
-        <div className="section-nav-scroll" style={{ marginTop: 40, borderBottom: "1px solid var(--border)" }}>
-          <SectionNav />
-        </div>
       </div>
     </section>
   );
@@ -760,6 +757,12 @@ export default function ToolDetailPage({ tool, reviews, related }: {
   return (
     <div>
       <ToolHero tool={tool} upvoted={upvoted} setUpvoted={setUpvoted} upvoteCount={upvoteCount} setUpvoteCount={setUpvoteCount} saved={saved} setSaved={setSaved} />
+      {/* Sticky section nav */}
+      <div style={{ position: "sticky", top: 0, zIndex: 40, background: "var(--bg)", borderBottom: "1px solid var(--border)" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px" }}>
+          <SectionNav />
+        </div>
+      </div>
       <div className="tool-main-grid" style={{ maxWidth: 1280, margin: "0 auto", padding: "52px 24px 80px", display: "grid", gridTemplateColumns: "1fr 340px", gap: 52 }}>
         <main style={{ display: "flex", flexDirection: "column", gap: 52, minWidth: 0 }}>
           <Overview tool={tool} />
@@ -768,8 +771,8 @@ export default function ToolDetailPage({ tool, reviews, related }: {
           <Scores tool={tool} />
           <Pricing tool={tool} />
           <FeatureTable tool={tool} />
-          <Reviews tool={tool} reviews={reviews} />
           <ToolFAQ tool={tool} />
+          <Reviews tool={tool} reviews={reviews} />
         </main>
         <div className="tool-sidebar-col"><Sidebar tool={tool} related={related} /></div>
       </div>
