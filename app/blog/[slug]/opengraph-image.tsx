@@ -118,7 +118,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
                 fontWeight: 700,
               }}
             >
-              {author.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+              {author.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase()}
             </div>
             <span style={{ color: "#ffffffcc", fontSize: 17, fontWeight: 500 }}>{author}</span>
           </div>
