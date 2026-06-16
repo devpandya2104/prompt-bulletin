@@ -757,12 +757,14 @@ export default function ToolDetailPage({ tool, reviews, related }: {
   return (
     <div>
       <ToolHero tool={tool} upvoted={upvoted} setUpvoted={setUpvoted} upvoteCount={upvoteCount} setUpvoteCount={setUpvoteCount} saved={saved} setSaved={setSaved} />
-      {/* Sticky section nav */}
-      <div style={{ position: "sticky", top: 0, zIndex: 40, background: "var(--bg)", borderBottom: "1px solid var(--border)" }}>
+      {/* Fixed section nav — position:sticky is broken by overflow-x:hidden on body */}
+      <div style={{ position: "fixed", top: 64, left: 0, right: 0, zIndex: 40, background: "var(--bg)", borderBottom: "1px solid var(--border)" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px" }}>
           <SectionNav />
         </div>
       </div>
+      {/* Spacer: navbar (64px) + tab bar (~49px) */}
+      <div style={{ height: 49 }} />
       <div className="tool-main-grid" style={{ maxWidth: 1280, margin: "0 auto", padding: "52px 24px 80px", display: "grid", gridTemplateColumns: "1fr 340px", gap: 52 }}>
         <main style={{ display: "flex", flexDirection: "column", gap: 52, minWidth: 0 }}>
           <Overview tool={tool} />
