@@ -684,6 +684,64 @@ function Sidebar({ tool, related }: {
   );
 }
 
+// ── FAQ ───────────────────────────────────────────────────────────────────────
+function ToolFAQ({ tool }: { tool: ToolDetail }) {
+  const [open, setOpen] = useState<number | null>(null);
+
+  const faqs: { q: string; a: string }[] = [];
+
+  if (tool.tagline || tool.summary || tool.description) {
+    faqs.push({
+      q: `What is ${tool.name}?`,
+      a: tool.tagline ?? (tool.summary ?? tool.description).split("\n")[0].slice(0, 400),
+    });
+  }
+  if (tool.pricing) {
+    const tiers = tool.pricing_tiers?.length
+      ? ` Available plans: ${tool.pricing_tiers.map(t => `${t.name} at ${t.price}/${t.period}`).join(", ")}.`
+      : "";
+    faqs.push({ q: `How much does ${tool.name} cost?`, a: `${tool.pricing}.${tiers}` });
+  }
+  if (tool.best_for?.length) {
+    faqs.push({ q: `What is ${tool.name} best for?`, a: `${tool.name} is best suited for: ${tool.best_for.join(", ")}.` });
+  }
+  if (tool.pros?.length) {
+    faqs.push({ q: `What are the main advantages of ${tool.name}?`, a: `Key advantages include: ${tool.pros.slice(0, 5).join("; ")}.` });
+  }
+  if (tool.cons?.length) {
+    faqs.push({ q: `What are the limitations of ${tool.name}?`, a: `Known limitations: ${tool.cons.slice(0, 3).join("; ")}.` });
+  }
+  if (tool.platforms?.length) {
+    faqs.push({ q: `What platforms does ${tool.name} support?`, a: `${tool.name} is available on: ${tool.platforms.join(", ")}.` });
+  }
+
+  if (faqs.length === 0) return null;
+
+  return (
+    <div id="section-faq">
+      <h2 style={{ fontFamily: "var(--font-space)", fontSize: 22, fontWeight: 700, color: "var(--text)", marginBottom: 20, letterSpacing: "-0.02em" }}>
+        Frequently Asked Questions
+      </h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        {faqs.map(({ q, a }, i) => (
+          <div key={q} style={{ borderRadius: 10, border: "1px solid var(--border)", overflow: "hidden", background: open === i ? "var(--bg2)" : "transparent", transition: "background 0.15s" }}>
+            <button
+              onClick={() => setOpen(open === i ? null : i)}
+              style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", background: "none", border: "none", cursor: "pointer", textAlign: "left", gap: 12 }}
+            >
+              <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text)", lineHeight: 1.4 }}>{q}</span>
+              <span style={{ color: "var(--accent)", fontSize: 18, flexShrink: 0, transition: "transform 0.2s", display: "inline-block", transform: open === i ? "rotate(45deg)" : "rotate(0deg)" }}>+</span>
+            </button>
+            {open === i && (
+              <div style={{ padding: "0 18px 16px", fontSize: 14, color: "var(--text2)", lineHeight: 1.7 }}>{a}</div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Page root ─────────────────────────────────────────────────────────────────
 export default function ToolDetailPage({ tool, reviews, related }: {
   tool: ToolDetail;
@@ -715,6 +773,7 @@ export default function ToolDetailPage({ tool, reviews, related }: {
           <Pricing tool={tool} />
           <FeatureTable tool={tool} />
           <Reviews tool={tool} reviews={reviews} />
+          <ToolFAQ tool={tool} />
         </main>
         <div className="tool-sidebar-col"><Sidebar tool={tool} related={related} /></div>
       </div>
