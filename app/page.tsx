@@ -77,11 +77,28 @@ export default async function Home() {
     })),
   };
 
+  // Top 20 tools as ItemList — helps AI engines and Google understand the directory
+  const itemListSchema = tools.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Top-Rated AI Tools",
+    "description": "The highest-rated AI tools reviewed by the PromptBulletin editorial team.",
+    "url": SITE_URL,
+    "numberOfItems": Math.min(tools.length, 20),
+    "itemListElement": tools.slice(0, 20).map((tool, i) => ({
+      "@type": "ListItem",
+      "position": i + 1,
+      "url": `${SITE_URL}/tools/${tool.slug}`,
+      "name": tool.name,
+    })),
+  } : null;
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      {itemListSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }} />}
       <Navbar config={config.navbar} />
       <main>
         <Hero        config={config.hero} />

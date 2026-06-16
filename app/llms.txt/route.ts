@@ -45,7 +45,9 @@ export async function GET() {
     ``,
     `- [Home — Browse All AI Tools](${SITE_URL}/): Full directory with category filters and search`,
     `- [Blog & Guides](${SITE_URL}/blog): In-depth guides, comparisons, and "best of" lists`,
+    `- [Editorial Standards](${SITE_URL}/editorial-standards): 12-point review methodology and independence policy`,
     `- [Sitemap](${SITE_URL}/sitemap.xml): Complete index of all pages`,
+    `- [Full Content Index](${SITE_URL}/llms-full.txt): Detailed per-tool descriptions for AI engines`,
     ``,
   ];
 
