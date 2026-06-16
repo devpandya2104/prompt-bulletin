@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { saveBlogPost, createBlogPost } from "@/app/admin/actions";
 import ImageUpload from "./ImageUpload";
 import RichTextEditor, { addHeadingIds } from "./RichTextEditor";
-import type { BlogPostDetail, BodyBlock, ListItem, Author } from "@/lib/queries";
+import type { BlogPostDetail, BodyBlock, ListItem, Author, ComparisonData, ComparisonRow, ComparisonTool } from "@/lib/queries";
 import { BLOG_CATEGORIES } from "@/lib/site-config";
 
 // ── Shared styles ─────────────────────────────────────────────────
@@ -486,6 +486,225 @@ function ListItemsEditor({ items, onChange }: { items: ListItem[]; onChange: (v:
   );
 }
 
+// ── Comparison editor ─────────────────────────────────────────────
+
+function defaultComparisonData(): ComparisonData {
+  return {
+    tool_a: { name: "", slug: "", logo_url: "", website_url: "", pricing: "" },
+    tool_b: { name: "", slug: "", logo_url: "", website_url: "", pricing: "" },
+    quick_verdict: { summary: "", choose_a_if: [], choose_b_if: [] },
+    comparison_table: [],
+    features_html: "", pricing_html: "", ease_of_use_html: "", performance_html: "",
+    pros_a: [], cons_a: [], pros_b: [], cons_b: [],
+    use_cases_a: [], use_cases_b: [],
+    final_verdict_html: "",
+    faqs: [],
+  };
+}
+
+function ToolFields({ label, tool, onChange, accentColor }: {
+  label: string;
+  tool: ComparisonTool;
+  onChange: (t: ComparisonTool) => void;
+  accentColor: string;
+}) {
+  return (
+    <div style={{ background: "var(--bg3)", borderRadius: 10, padding: 16, border: `1px solid ${accentColor}` }}>
+      <div style={{ ...labelStyle, color: accentColor, marginBottom: 12 }}>{label}</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+        <div><label style={labelStyle}>Name</label><Input value={tool.name} placeholder="Cursor" onChange={(v) => onChange({ ...tool, name: v })} /></div>
+        <div><label style={labelStyle}>Slug</label><Input value={tool.slug} placeholder="cursor" onChange={(v) => onChange({ ...tool, slug: v })} /></div>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <div><label style={labelStyle}>Website URL</label><Input value={tool.website_url} placeholder="https://cursor.sh" onChange={(v) => onChange({ ...tool, website_url: v })} /></div>
+        <div><label style={labelStyle}>Pricing</label><Input value={tool.pricing} placeholder="Free / $20/mo" onChange={(v) => onChange({ ...tool, pricing: v })} /></div>
+      </div>
+      <div style={{ marginTop: 10 }}>
+        <label style={labelStyle}>Logo URL</label>
+        <Input value={tool.logo_url} placeholder="https://…/logo.png" onChange={(v) => onChange({ ...tool, logo_url: v })} />
+      </div>
+    </div>
+  );
+}
+
+function ComparisonTableEditor({ rows, onChange }: { rows: ComparisonRow[]; onChange: (r: ComparisonRow[]) => void }) {
+  return (
+    <div>
+      {rows.map((row, i) => (
+        <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 8, marginBottom: 8, alignItems: "center" }}>
+          <Input value={row.feature} placeholder="Feature" onChange={(v) => { const n = [...rows]; n[i] = { ...n[i], feature: v }; onChange(n); }} />
+          <Input value={row.tool_a} placeholder="Tool A value" onChange={(v) => { const n = [...rows]; n[i] = { ...n[i], tool_a: v }; onChange(n); }} />
+          <Input value={row.tool_b} placeholder="Tool B value" onChange={(v) => { const n = [...rows]; n[i] = { ...n[i], tool_b: v }; onChange(n); }} />
+          <button style={removeBtnStyle} onClick={() => onChange(rows.filter((_, idx) => idx !== i))}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--red)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text3)")}>✕</button>
+        </div>
+      ))}
+      {rows.length > 0 && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 8, marginBottom: 8 }}>
+          <div style={{ fontSize: 11, color: "var(--text3)", padding: "0 4px" }}>Feature</div>
+          <div style={{ fontSize: 11, color: "var(--accent)", padding: "0 4px" }}>Tool A</div>
+          <div style={{ fontSize: 11, color: "var(--accent2)", padding: "0 4px" }}>Tool B</div>
+          <div />
+        </div>
+      )}
+      <button style={addBtnStyle} onClick={() => onChange([...rows, { feature: "", tool_a: "", tool_b: "" }])}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--accent)"; (e.currentTarget as HTMLElement).style.color = "var(--accent)"; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border2)"; (e.currentTarget as HTMLElement).style.color = "var(--text3)"; }}>
+        + Add row
+      </button>
+    </div>
+  );
+}
+
+function FaqEditor({ faqs, onChange }: { faqs: { q: string; a: string }[]; onChange: (v: { q: string; a: string }[]) => void }) {
+  return (
+    <div>
+      {faqs.map((faq, i) => (
+        <div key={i} style={{ border: "1px solid var(--border2)", borderRadius: 10, padding: 14, marginBottom: 10 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text3)" }}>FAQ #{i + 1}</span>
+            <button style={removeBtnStyle} onClick={() => onChange(faqs.filter((_, idx) => idx !== i))}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--red)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--text3)"; }}>Remove</button>
+          </div>
+          <div style={{ marginBottom: 8 }}>
+            <label style={labelStyle}>Question</label>
+            <Input value={faq.q} placeholder="Question…" onChange={(v) => { const n = [...faqs]; n[i] = { ...n[i], q: v }; onChange(n); }} />
+          </div>
+          <div>
+            <label style={labelStyle}>Answer</label>
+            <Textarea value={faq.a} rows={3} placeholder="Answer…" onChange={(v) => { const n = [...faqs]; n[i] = { ...n[i], a: v }; onChange(n); }} />
+          </div>
+        </div>
+      ))}
+      <button style={addBtnStyle} onClick={() => onChange([...faqs, { q: "", a: "" }])}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--accent)"; (e.currentTarget as HTMLElement).style.color = "var(--accent)"; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border2)"; (e.currentTarget as HTMLElement).style.color = "var(--text3)"; }}>
+        + Add FAQ
+      </button>
+    </div>
+  );
+}
+
+function ComparisonEditor({ data, onChange }: { data: ComparisonData; onChange: (d: ComparisonData) => void }) {
+  const upd = <K extends keyof ComparisonData>(key: K, value: ComparisonData[K]) =>
+    onChange({ ...data, [key]: value });
+
+  return (
+    <div>
+      {/* Tools */}
+      <div style={sectionStyle}>
+        <p style={sectionTitle}>Tools Being Compared</p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <ToolFields label="TOOL A" tool={data.tool_a} onChange={(t) => upd("tool_a", t)} accentColor="var(--accent)" />
+          <ToolFields label="TOOL B" tool={data.tool_b} onChange={(t) => upd("tool_b", t)} accentColor="var(--accent2)" />
+        </div>
+      </div>
+
+      {/* Quick Verdict */}
+      <div style={sectionStyle}>
+        <p style={sectionTitle}>Quick Verdict</p>
+        <Field label="Summary">
+          <Textarea value={data.quick_verdict.summary} rows={3} placeholder="Overall summary of both tools…"
+            onChange={(v) => upd("quick_verdict", { ...data.quick_verdict, summary: v })} />
+        </Field>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div>
+            <label style={{ ...labelStyle, color: "var(--accent)" }}>Choose {data.tool_a.name || "Tool A"} if…</label>
+            <StringList items={data.quick_verdict.choose_a_if} placeholder="Bullet point…"
+              onChange={(v) => upd("quick_verdict", { ...data.quick_verdict, choose_a_if: v })} />
+          </div>
+          <div>
+            <label style={{ ...labelStyle, color: "var(--accent2)" }}>Choose {data.tool_b.name || "Tool B"} if…</label>
+            <StringList items={data.quick_verdict.choose_b_if} placeholder="Bullet point…"
+              onChange={(v) => upd("quick_verdict", { ...data.quick_verdict, choose_b_if: v })} />
+          </div>
+        </div>
+      </div>
+
+      {/* Comparison Table */}
+      <div style={sectionStyle}>
+        <p style={sectionTitle}>Comparison Table</p>
+        <ComparisonTableEditor rows={data.comparison_table} onChange={(r) => upd("comparison_table", r)} />
+      </div>
+
+      {/* Content sections */}
+      <div style={sectionStyle}>
+        <p style={sectionTitle}>Features</p>
+        <RichTextEditor value={data.features_html} onChange={(v) => upd("features_html", v)} placeholder="Describe and compare the key features of both tools…" />
+      </div>
+
+      <div style={sectionStyle}>
+        <p style={sectionTitle}>Pricing</p>
+        <RichTextEditor value={data.pricing_html} onChange={(v) => upd("pricing_html", v)} placeholder="Compare pricing tiers, free plans, and value for money…" />
+      </div>
+
+      <div style={sectionStyle}>
+        <p style={sectionTitle}>Ease of Use</p>
+        <RichTextEditor value={data.ease_of_use_html} onChange={(v) => upd("ease_of_use_html", v)} placeholder="Compare onboarding, UI, and learning curves…" />
+      </div>
+
+      <div style={sectionStyle}>
+        <p style={sectionTitle}>Performance</p>
+        <RichTextEditor value={data.performance_html} onChange={(v) => upd("performance_html", v)} placeholder="Compare speed, accuracy, and reliability…" />
+      </div>
+
+      {/* Pros & Cons */}
+      <div style={sectionStyle}>
+        <p style={sectionTitle}>Pros & Cons</p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+          <div>
+            <div style={{ fontFamily: "var(--font-space)", fontSize: 13, fontWeight: 700, color: "var(--accent)", marginBottom: 10 }}>{data.tool_a.name || "Tool A"}</div>
+            <label style={{ ...labelStyle, color: "var(--green)" }}>Pros</label>
+            <StringList items={data.pros_a} placeholder="A strength…" onChange={(v) => upd("pros_a", v)} />
+            <div style={{ marginTop: 12 }}>
+              <label style={{ ...labelStyle, color: "var(--red)" }}>Cons</label>
+              <StringList items={data.cons_a} placeholder="A weakness…" onChange={(v) => upd("cons_a", v)} />
+            </div>
+          </div>
+          <div>
+            <div style={{ fontFamily: "var(--font-space)", fontSize: 13, fontWeight: 700, color: "var(--accent2)", marginBottom: 10 }}>{data.tool_b.name || "Tool B"}</div>
+            <label style={{ ...labelStyle, color: "var(--green)" }}>Pros</label>
+            <StringList items={data.pros_b} placeholder="A strength…" onChange={(v) => upd("pros_b", v)} />
+            <div style={{ marginTop: 12 }}>
+              <label style={{ ...labelStyle, color: "var(--red)" }}>Cons</label>
+              <StringList items={data.cons_b} placeholder="A weakness…" onChange={(v) => upd("cons_b", v)} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Use Cases */}
+      <div style={sectionStyle}>
+        <p style={sectionTitle}>Best Use Cases</p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+          <div>
+            <label style={{ ...labelStyle, color: "var(--accent)" }}>{data.tool_a.name || "Tool A"}</label>
+            <StringList items={data.use_cases_a} placeholder="Use case…" onChange={(v) => upd("use_cases_a", v)} />
+          </div>
+          <div>
+            <label style={{ ...labelStyle, color: "var(--accent2)" }}>{data.tool_b.name || "Tool B"}</label>
+            <StringList items={data.use_cases_b} placeholder="Use case…" onChange={(v) => upd("use_cases_b", v)} />
+          </div>
+        </div>
+      </div>
+
+      {/* Final Verdict */}
+      <div style={sectionStyle}>
+        <p style={sectionTitle}>Final Verdict</p>
+        <RichTextEditor value={data.final_verdict_html} onChange={(v) => upd("final_verdict_html", v)} placeholder="Give your final recommendation and verdict…" />
+      </div>
+
+      {/* FAQs */}
+      <div style={sectionStyle}>
+        <p style={sectionTitle}>FAQs</p>
+        <FaqEditor faqs={data.faqs} onChange={(v) => upd("faqs", v)} />
+      </div>
+    </div>
+  );
+}
+
 // ── Main BlogEditor ───────────────────────────────────────────────
 
 function postUrl(slug: string, postType: string): string {
@@ -510,6 +729,7 @@ type FormState = {
   list_items: ListItem[];
   focus_keyword: string;
   seo_title: string; seo_description: string; seo_og_image: string; canonical_url: string;
+  comparison_data: ComparisonData;
 };
 
 function autoSlug(title: string) {
@@ -555,6 +775,7 @@ export default function BlogEditor({ post, authors = [] }: { post: BlogPostDetai
     seo_description: (post as Record<string, unknown>)?.seo_description as string ?? "",
     seo_og_image:    (post as Record<string, unknown>)?.seo_og_image    as string ?? "",
     canonical_url:   (post as Record<string, unknown>)?.canonical_url   as string ?? "",
+    comparison_data: ((post as Record<string, unknown>)?.comparison_data as ComparisonData | null | undefined) ?? defaultComparisonData(),
   });
 
   const upd = <K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -579,6 +800,7 @@ export default function BlogEditor({ post, authors = [] }: { post: BlogPostDetai
           author_id: form.author_id || null,
           intro_html: form.intro_html || null,
           conclusion_html: form.conclusion_html || null,
+          comparison_data: form.post_type === "comparison" ? form.comparison_data : null,
         };
         if (post) {
           await saveBlogPost(post.id, payload);
@@ -761,12 +983,12 @@ export default function BlogEditor({ post, authors = [] }: { post: BlogPostDetai
       </div>
 
       {/* ── Content (conditional on post_type) ── */}
-      {form.post_type === "article" || form.post_type === "comparison" ? (
+      {form.post_type === "comparison" ? (
+        <ComparisonEditor data={form.comparison_data} onChange={(d) => upd("comparison_data", d)} />
+      ) : form.post_type === "article" ? (
         <>
           <div style={sectionStyle}>
-            <p style={{ ...sectionTitle, marginBottom: 16 }}>
-              {form.post_type === "comparison" ? "Comparison Content" : "Article Content"}
-            </p>
+            <p style={{ ...sectionTitle, marginBottom: 16 }}>Article Content</p>
             <p style={{ fontSize: 12, color: "var(--text3)", margin: "-8px 0 14px" }}>
               Use <strong style={{ color: "var(--text2)" }}>H2</strong> headings to generate the table of contents. Links, bold, italic, lists, blockquotes and more are all supported via the toolbar.
             </p>

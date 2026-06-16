@@ -117,6 +117,36 @@ export type ListItem = {
   cons: string[];
 };
 
+export type ComparisonTool = {
+  name: string;
+  slug: string;
+  logo_url: string;
+  website_url: string;
+  pricing: string;
+};
+
+export type ComparisonRow = {
+  feature: string;
+  tool_a: string;
+  tool_b: string;
+};
+
+export type ComparisonData = {
+  tool_a: ComparisonTool;
+  tool_b: ComparisonTool;
+  quick_verdict: { summary: string; choose_a_if: string[]; choose_b_if: string[] };
+  comparison_table: ComparisonRow[];
+  features_html: string;
+  pricing_html: string;
+  ease_of_use_html: string;
+  performance_html: string;
+  pros_a: string[]; cons_a: string[];
+  pros_b: string[]; cons_b: string[];
+  use_cases_a: string[]; use_cases_b: string[];
+  final_verdict_html: string;
+  faqs: { q: string; a: string }[];
+};
+
 export type BlogPostDetail = BlogPost & {
   post_type: "article" | "listicle" | "comparison" | "best";
   author_role: string | null;
@@ -128,6 +158,7 @@ export type BlogPostDetail = BlogPost & {
   related_tool_slug: string | null;
   intro_html: string | null;
   conclusion_html: string | null;
+  comparison_data?: ComparisonData | null;
 };
 
 export async function getCategories(): Promise<Category[]> {

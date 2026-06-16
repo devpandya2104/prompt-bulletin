@@ -3,8 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import ArticlePage from "@/components/ArticlePage";
-import type { BlogPostDetail } from "@/lib/queries";
+import ComparisonPage from "@/components/ComparisonPage";
+import type { BlogPostDetail, ComparisonData } from "@/lib/queries";
 import type { Metadata } from "next";
 
 export const revalidate = 3600;
@@ -60,6 +60,7 @@ export default async function ComparePage({ params }: { params: Promise<{ slug: 
 
   const typedPost = post as BlogPostDetail;
   const canonicalUrl = `${SITE_URL}/compare/${slug}`;
+  const comparisonData = (post as BlogPostDetail & { comparison_data?: ComparisonData | null }).comparison_data;
 
   const articleSchema = {
     "@context": "https://schema.org",
@@ -85,12 +86,27 @@ export default async function ComparePage({ params }: { params: Promise<{ slug: 
     ],
   };
 
+  const faqSchema = comparisonData?.faqs?.length
+    ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": comparisonData.faqs.map((faq) => ({
+          "@type": "Question",
+          "name": faq.q,
+          "acceptedAnswer": { "@type": "Answer", "text": faq.a },
+        })),
+      }
+    : null;
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      {faqSchema && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      )}
       <Navbar />
-      <ArticlePage post={typedPost} />
+      <ComparisonPage post={typedPost} />
       <Footer />
     </>
   );
