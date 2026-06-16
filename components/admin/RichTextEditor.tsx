@@ -180,6 +180,7 @@ export default function RichTextEditor({
   minHeight?: number;
 }) {
   const editor = useEditor({
+    autofocus: false,
     extensions: [
       StarterKit.configure({ heading: { levels: [2, 3] }, link: false, underline: false }),
       LinkExtension.configure({ openOnClick: false, linkOnPaste: true }),
