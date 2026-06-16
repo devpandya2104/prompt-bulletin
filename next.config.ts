@@ -3,14 +3,14 @@ import type { NextConfig } from "next";
 const CSP = [
   "default-src 'self'",
   // Next.js needs unsafe-inline for hydration scripts; JSON-LD blocks also need it
-  // Google Tag Manager also requires its domain to be whitelisted
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",
+  // GTM + Cloudflare Insights both inject scripts
+  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://static.cloudflareinsights.com",
   "style-src 'self' 'unsafe-inline'",
-  // Images from Supabase storage, CDN, Unsplash, AWS, and GA measurement pixel
-  "img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in https://images.unsplash.com https://*.amazonaws.com https://cdn.promptbulletin.com https://www.google-analytics.com",
+  // Images from Supabase storage, Cloudflare R2, CDN, Unsplash, AWS, and GA measurement pixel
+  "img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in https://images.unsplash.com https://*.amazonaws.com https://cdn.promptbulletin.com https://www.google-analytics.com https://*.r2.cloudflarestorage.com https://*.cloudflarestorage.com",
   "font-src 'self' https://fonts.gstatic.com",
-  // Supabase API + realtime WebSocket + Google Analytics data collection
-  "connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://cdn.promptbulletin.com https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com",
+  // Supabase API + realtime WebSocket + Google Analytics + Cloudflare R2 uploads
+  "connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://cdn.promptbulletin.com https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://*.r2.cloudflarestorage.com https://*.cloudflarestorage.com https://cloudflareinsights.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
