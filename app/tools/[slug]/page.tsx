@@ -84,7 +84,61 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
 
   const t = tool as ToolDetail & { website_url?: string; categories?: { name: string; slug: string } | null };
   const canonicalUrl = `${SITE_URL}/tools/${slug}`;
+  const fetchedReviews = (reviews ?? []) as ToolReview[];
 
+  // ── Editorial review from PromptBulletin ──────────────────────────────
+  const editorRating5 = t.editor_rating ? parseFloat((t.editor_rating / 2).toFixed(1)) : null;
+
+  const editorialReview = editorRating5 && editorRating5 >= 1 ? {
+    "@type": "Review",
+    "author": { "@type": "Organization", "name": "PromptBulletin", "url": SITE_URL },
+    "datePublished": (t as { updated_at?: string | null }).updated_at
+      ? new Date((t as { updated_at: string }).updated_at).toISOString().slice(0, 10)
+      : new Date().toISOString().slice(0, 10),
+    "reviewRating": {
+      "@type": "Rating",
+      "ratingValue": String(editorRating5),
+      "bestRating": "5",
+      "worstRating": "1",
+    },
+    "reviewBody": t.summary ?? t.description,
+    ...(t.pros?.length ? {
+      "positiveNotes": {
+        "@type": "ItemList",
+        "itemListElement": t.pros.slice(0, 6).map((name, i) => ({ "@type": "ListItem", "position": i + 1, name })),
+      },
+    } : {}),
+    ...(t.cons?.length ? {
+      "negativeNotes": {
+        "@type": "ItemList",
+        "itemListElement": t.cons.slice(0, 6).map((name, i) => ({ "@type": "ListItem", "position": i + 1, name })),
+      },
+    } : {}),
+  } : null;
+
+  // ── User reviews (up to 5 most helpful) ──────────────────────────────
+  const userReviews = fetchedReviews.slice(0, 5).map((r) => ({
+    "@type": "Review",
+    "author": { "@type": "Person", "name": r.author_name },
+    "reviewRating": {
+      "@type": "Rating",
+      "ratingValue": String(r.rating),
+      "bestRating": "5",
+      "worstRating": "1",
+    },
+    "reviewBody": r.review_text,
+  }));
+
+  const allReviews = [...(editorialReview ? [editorialReview] : []), ...userReviews];
+
+  // ── Aggregate rating (editor + users combined) ────────────────────────
+  const totalCount = fetchedReviews.length + (editorialReview ? 1 : 0);
+  const ratingSum = fetchedReviews.reduce((s, r) => s + r.rating, editorRating5 ?? 0);
+  const avgRating = totalCount > 0
+    ? parseFloat((ratingSum / totalCount).toFixed(1))
+    : (t.rating ?? 0);
+
+  // ── Full schema ───────────────────────────────────────────────────────
   const softwareSchema = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -93,23 +147,26 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
     "description": t.tagline ?? t.description,
     "applicationCategory": "BusinessApplication",
     "operatingSystem": t.platforms?.join(", ") || "Web",
+    ...(t.logo_url ? { "image": t.logo_url } : {}),
+    ...(t.company ? { "author": { "@type": "Organization", "name": t.company } } : {}),
     ...(t.pricing ? {
       "offers": {
         "@type": "Offer",
-        "price": t.pricing.toLowerCase().includes("free") ? "0" : undefined,
         "priceCurrency": "USD",
+        ...(t.pricing.toLowerCase().includes("free") ? { "price": "0" } : {}),
         "description": t.pricing,
       },
     } : {}),
-    ...(t.review_count > 0 ? {
+    ...(totalCount > 0 ? {
       "aggregateRating": {
         "@type": "AggregateRating",
-        "ratingValue": t.editor_rating ?? t.rating,
-        "reviewCount": t.review_count,
+        "ratingValue": String(avgRating),
+        "reviewCount": String(totalCount),
         "bestRating": "5",
         "worstRating": "1",
       },
     } : {}),
+    ...(allReviews.length > 0 ? { "review": allReviews } : {}),
   };
 
   const breadcrumbSchema = {
@@ -130,7 +187,7 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
       <Navbar />
       <ToolDetailPage
         tool={t as ToolDetail}
-        reviews={(reviews ?? []) as ToolReview[]}
+        reviews={fetchedReviews}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         related={(related ?? []) as any}
       />
