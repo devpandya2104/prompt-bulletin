@@ -4,7 +4,7 @@ import StarterKit from "@tiptap/starter-kit";
 import LinkExtension from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
 import Placeholder from "@tiptap/extension-placeholder";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 
 // ── Inject IDs into h2/h3 so TOC can anchor to them ───────────────
 export function addHeadingIds(html: string): string {
@@ -168,7 +168,7 @@ function Toolbar({ editor }: { editor: Editor | null }) {
 }
 
 // ── Main export ────────────────────────────────────────────────────
-export default function RichTextEditor({
+const RichTextEditor = memo(function RichTextEditor({
   value,
   onChange,
   placeholder = "Start writing your article… Use the toolbar above for headings, links, lists, and formatting.",
@@ -179,6 +179,9 @@ export default function RichTextEditor({
   placeholder?: string;
   minHeight?: number;
 }) {
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
   const editor = useEditor({
     autofocus: false,
     extensions: [
@@ -188,7 +191,7 @@ export default function RichTextEditor({
       Placeholder.configure({ placeholder }),
     ],
     content: value || "",
-    onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    onUpdate: ({ editor }) => onChangeRef.current(editor.getHTML()),
     editorProps: { attributes: { class: "pb-rte" } },
   });
 
@@ -209,4 +212,10 @@ export default function RichTextEditor({
       <EditorContent editor={editor} style={{ minHeight }} />
     </div>
   );
-}
+}, (prev, next) =>
+  prev.value === next.value &&
+  prev.placeholder === next.placeholder &&
+  prev.minHeight === next.minHeight
+);
+
+export default RichTextEditor;
