@@ -685,35 +685,31 @@ function Sidebar({ tool, related }: {
 }
 
 // ── FAQ ───────────────────────────────────────────────────────────────────────
-function ToolFAQ({ tool }: { tool: ToolDetail }) {
-  const [open, setOpen] = useState<number | null>(null);
-
+function buildAutoFaqs(tool: ToolDetail): { q: string; a: string }[] {
   const faqs: { q: string; a: string }[] = [];
-
-  if (tool.tagline || tool.summary || tool.description) {
-    faqs.push({
-      q: `What is ${tool.name}?`,
-      a: tool.tagline ?? (tool.summary ?? tool.description).split("\n")[0].slice(0, 400),
-    });
-  }
+  if (tool.tagline || tool.summary || tool.description)
+    faqs.push({ q: `What is ${tool.name}?`, a: tool.tagline ?? (tool.summary ?? tool.description).split("\n")[0].slice(0, 400) });
   if (tool.pricing) {
     const tiers = tool.pricing_tiers?.length
       ? ` Available plans: ${tool.pricing_tiers.map(t => `${t.name} at ${t.price}/${t.period}`).join(", ")}.`
       : "";
     faqs.push({ q: `How much does ${tool.name} cost?`, a: `${tool.pricing}.${tiers}` });
   }
-  if (tool.best_for?.length) {
+  if (tool.best_for?.length)
     faqs.push({ q: `What is ${tool.name} best for?`, a: `${tool.name} is best suited for: ${tool.best_for.join(", ")}.` });
-  }
-  if (tool.pros?.length) {
+  if (tool.pros?.length)
     faqs.push({ q: `What are the main advantages of ${tool.name}?`, a: `Key advantages include: ${tool.pros.slice(0, 5).join("; ")}.` });
-  }
-  if (tool.cons?.length) {
+  if (tool.cons?.length)
     faqs.push({ q: `What are the limitations of ${tool.name}?`, a: `Known limitations: ${tool.cons.slice(0, 3).join("; ")}.` });
-  }
-  if (tool.platforms?.length) {
+  if (tool.platforms?.length)
     faqs.push({ q: `What platforms does ${tool.name} support?`, a: `${tool.name} is available on: ${tool.platforms.join(", ")}.` });
-  }
+  return faqs;
+}
+
+function ToolFAQ({ tool }: { tool: ToolDetail }) {
+  const [open, setOpen] = useState<number | null>(null);
+
+  const faqs = tool.faqs?.length ? tool.faqs : buildAutoFaqs(tool);
 
   if (faqs.length === 0) return null;
 

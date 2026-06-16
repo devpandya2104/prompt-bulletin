@@ -44,6 +44,7 @@ export type ToolDetail = Tool & {
   link_rel: "nofollow" | "dofollow" | "sponsored";
   screenshots: Screenshot[];
   is_published: boolean;
+  faqs?: { q: string; a: string }[] | null;
 };
 
 export type Category = {

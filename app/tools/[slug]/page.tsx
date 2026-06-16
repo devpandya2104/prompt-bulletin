@@ -170,20 +170,24 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
     ...(allReviews.length > 0 ? { "review": allReviews } : {}),
   };
 
-  // ── FAQPage schema (auto-generated from tool data) ───────────────────
-  const faqItems: { q: string; a: string }[] = [];
-  if (t.tagline || t.summary || t.description)
-    faqItems.push({ q: `What is ${t.name}?`, a: t.tagline ?? (t.summary ?? t.description).split("\n")[0].slice(0, 400) });
-  if (t.pricing)
-    faqItems.push({ q: `How much does ${t.name} cost?`, a: t.pricing });
-  if ((t as ToolDetail).best_for?.length)
-    faqItems.push({ q: `What is ${t.name} best for?`, a: `${t.name} is best suited for: ${(t as ToolDetail).best_for.join(", ")}.` });
-  if (t.pros?.length)
-    faqItems.push({ q: `What are the main advantages of ${t.name}?`, a: `Key advantages: ${t.pros.slice(0, 5).join("; ")}.` });
-  if (t.cons?.length)
-    faqItems.push({ q: `What are the limitations of ${t.name}?`, a: `Known limitations: ${t.cons.slice(0, 3).join("; ")}.` });
-  if (t.platforms?.length)
-    faqItems.push({ q: `What platforms does ${t.name} support?`, a: `Available on: ${t.platforms.join(", ")}.` });
+  // ── FAQPage schema — prefer DB-stored FAQs, fall back to auto-generated ─────
+  let faqItems: { q: string; a: string }[] = [];
+  if (t.faqs?.length) {
+    faqItems = t.faqs as { q: string; a: string }[];
+  } else {
+    if (t.tagline || t.summary || t.description)
+      faqItems.push({ q: `What is ${t.name}?`, a: t.tagline ?? (t.summary ?? t.description).split("\n")[0].slice(0, 400) });
+    if (t.pricing)
+      faqItems.push({ q: `How much does ${t.name} cost?`, a: t.pricing });
+    if ((t as ToolDetail).best_for?.length)
+      faqItems.push({ q: `What is ${t.name} best for?`, a: `${t.name} is best suited for: ${(t as ToolDetail).best_for.join(", ")}.` });
+    if (t.pros?.length)
+      faqItems.push({ q: `What are the main advantages of ${t.name}?`, a: `Key advantages: ${t.pros.slice(0, 5).join("; ")}.` });
+    if (t.cons?.length)
+      faqItems.push({ q: `What are the limitations of ${t.name}?`, a: `Known limitations: ${t.cons.slice(0, 3).join("; ")}.` });
+    if (t.platforms?.length)
+      faqItems.push({ q: `What platforms does ${t.name} support?`, a: `Available on: ${t.platforms.join(", ")}.` });
+  }
 
   const faqSchema = faqItems.length > 0 ? {
     "@context": "https://schema.org",

@@ -415,6 +415,63 @@ function ReviewsPanel({ toolId, initialReviews }: { toolId: string; initialRevie
   );
 }
 
+// ── FAQ pair editor ───────────────────────────────────────────────
+function FaqPairEditor({ items, onChange }: {
+  items: { q: string; a: string }[];
+  onChange: (v: { q: string; a: string }[]) => void;
+}) {
+  return (
+    <div>
+      {items.map((item, i) => (
+        <div key={i} style={{ marginBottom: 12, padding: "14px 16px", borderRadius: 10, border: "1px solid var(--border)", background: "rgba(255,255,255,0.02)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Q {i + 1}</span>
+            <button style={removeBtnStyle} onClick={() => onChange(items.filter((_, idx) => idx !== i))}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--red)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text3)")}>✕</button>
+          </div>
+          <StyledInput value={item.q} placeholder="Question…" onChange={(v) => {
+            const next = [...items]; next[i] = { ...next[i], q: v }; onChange(next);
+          }} />
+          <div style={{ marginTop: 8 }}>
+            <StyledTextarea value={item.a} placeholder="Answer…" rows={2} onChange={(v) => {
+              const next = [...items]; next[i] = { ...next[i], a: v }; onChange(next);
+            }} />
+          </div>
+        </div>
+      ))}
+      <button style={addBtnStyle} onClick={() => onChange([...items, { q: "", a: "" }])}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--accent)"; (e.currentTarget as HTMLElement).style.color = "var(--accent)"; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border2)"; (e.currentTarget as HTMLElement).style.color = "var(--text3)"; }}>
+        + Add FAQ
+      </button>
+    </div>
+  );
+}
+
+// ── Auto-generate FAQs from tool fields ───────────────────────────
+function autoGenerateFaqs(tool: ToolDetail | null): { q: string; a: string }[] {
+  if (!tool) return [];
+  const faqs: { q: string; a: string }[] = [];
+  if (tool.tagline || tool.summary || tool.description)
+    faqs.push({ q: `What is ${tool.name}?`, a: tool.tagline ?? (tool.summary ?? tool.description).split("\n")[0].slice(0, 400) });
+  if (tool.pricing) {
+    const tiers = tool.pricing_tiers?.length
+      ? ` Available plans: ${tool.pricing_tiers.map(t => `${t.name} at ${t.price}/${t.period}`).join(", ")}.`
+      : "";
+    faqs.push({ q: `How much does ${tool.name} cost?`, a: `${tool.pricing}.${tiers}` });
+  }
+  if (tool.best_for?.length)
+    faqs.push({ q: `What is ${tool.name} best for?`, a: `${tool.name} is best suited for: ${tool.best_for.join(", ")}.` });
+  if (tool.pros?.length)
+    faqs.push({ q: `What are the main advantages of ${tool.name}?`, a: `Key advantages include: ${tool.pros.slice(0, 5).join("; ")}.` });
+  if (tool.cons?.length)
+    faqs.push({ q: `What are the limitations of ${tool.name}?`, a: `Known limitations: ${tool.cons.slice(0, 3).join("; ")}.` });
+  if (tool.platforms?.length)
+    faqs.push({ q: `What platforms does ${tool.name} support?`, a: `${tool.name} is available on: ${tool.platforms.join(", ")}.` });
+  return faqs;
+}
+
 // ── Main ToolEditor component ─────────────────────────────────────
 type Category = { id: string; name: string; slug: string };
 
@@ -430,6 +487,7 @@ type FormState = {
   pricing_tiers: PricingTier[]; tool_features: ToolFeature[];
   logo_url: string;
   seo_title: string; seo_description: string; seo_og_image: string; canonical_url: string;
+  faqs: { q: string; a: string }[];
 };
 
 const PLATFORMS = ["Web", "iOS", "Android", "Mac", "Win", "Linux", "API", "Discord"];
@@ -478,6 +536,7 @@ export default function ToolEditor({
     seo_description: (tool as Record<string, unknown>)?.seo_description as string ?? "",
     seo_og_image:    (tool as Record<string, unknown>)?.seo_og_image    as string ?? "",
     canonical_url:   (tool as Record<string, unknown>)?.canonical_url   as string ?? "",
+    faqs:            tool?.faqs?.length ? (tool.faqs as { q: string; a: string }[]) : autoGenerateFaqs(tool),
   });
 
   const upd = <K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -696,6 +755,15 @@ export default function ToolEditor({
             <StringListEditor items={form.cons} onChange={(v) => upd("cons", v)} placeholder="A weakness…" />
           </div>
         </Row>
+      </div>
+
+      {/* ── Section: FAQs ── */}
+      <div style={sectionStyle}>
+        <p style={sectionTitleStyle}>FAQs (People Also Ask)</p>
+        <p style={{ fontSize: 12, color: "var(--text3)", marginTop: -12, marginBottom: 16 }}>
+          Pre-populated from tool data. Edit or add custom Q&amp;A pairs — these appear on the tool page and in Google&apos;s FAQ rich results.
+        </p>
+        <FaqPairEditor items={form.faqs} onChange={(v) => upd("faqs", v)} />
       </div>
 
       {/* ── Section: Editorial Scores ── */}
