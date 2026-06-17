@@ -11,9 +11,17 @@ type Post = {
 };
 
 const typeColor: Record<string, string> = {
-  article:  "var(--accent2)",
-  listicle: "var(--accent)",
+  article:    "var(--accent2)",
+  listicle:   "var(--accent)",
+  comparison: "var(--green)",
+  best:       "#a78bfa",
 };
+
+function liveUrl(slug: string, postType: string | null): string {
+  if (postType === "comparison") return `/compare/${slug}`;
+  if (postType === "best") return `/best/${slug}`;
+  return `/blog/${slug}`;
+}
 
 export default function BlogTable({ posts }: { posts: Post[] }) {
   const [list, setList] = useState(posts);
@@ -46,7 +54,12 @@ export default function BlogTable({ posts }: { posts: Post[] }) {
         }}>
           <div>
             <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>{post.title}</span>
-            <span style={{ fontSize: 11, color: "var(--text3)", marginLeft: 8 }}>/{post.slug}</span>
+            <a href={liveUrl(post.slug, post.post_type)} target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: 11, color: "var(--text3)", marginLeft: 8, textDecoration: "none" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text3)")}>
+              {liveUrl(post.slug, post.post_type)} ↗
+            </a>
           </div>
           <span style={{
             fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 100,

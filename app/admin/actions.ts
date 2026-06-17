@@ -53,7 +53,11 @@ export async function saveBlogPost(id: string, data: Record<string, unknown>) {
   const { error } = await supabase.from("blog_posts").update(data).eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath(`/blog/${data.slug}`);
+  revalidatePath(`/compare/${data.slug}`);
+  revalidatePath(`/best/${data.slug}`);
   revalidatePath("/blog");
+  revalidatePath("/compare");
+  revalidatePath("/best");
   revalidatePath("/", "layout");
 }
 

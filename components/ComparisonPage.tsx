@@ -134,7 +134,7 @@ function HeroSection({ post, tool_a, tool_b }: { post: BlogPostDetail; tool_a: C
             </span>
           )}
         </div>
-        {date && <span style={{ fontSize: 13, color: "var(--text3)" }}>· {date}</span>}
+        {date && <span style={{ fontSize: 13, color: "var(--text3)" }} suppressHydrationWarning>· {date}</span>}
         {post.read_time && <span style={{ fontSize: 13, color: "var(--text3)" }}>· {post.read_time} read</span>}
       </div>
 
