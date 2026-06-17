@@ -190,33 +190,43 @@ function SidebarNewsletter() {
   );
 }
 
-// ── Comparison mini-card (for /blog Comparisons section) ─────────────────────
+// ── Comparison card (for /blog Comparisons section) ──────────────────────────
 function ComparisonMiniCard({ post }: { post: BlogPost }) {
   const dateStr = post.published_at ? new Date(post.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
   return (
-    <Link href={`/compare/${post.slug}`} style={{ display: "flex", gap: 16, textDecoration: "none", padding: "16px 20px", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 14, transition: "all 0.2s", alignItems: "flex-start" }}
-      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = "var(--accent)"; el.style.transform = "translateX(3px)"; }}
+    <Link href={`/compare/${post.slug}`} style={{ display: "flex", flexDirection: "column", textDecoration: "none", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden", transition: "all 0.2s", position: "relative" }}
+      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = "var(--accent)"; el.style.transform = "translateY(-2px)"; }}
       onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = "var(--border)"; el.style.transform = "none"; }}>
 
-      {post.cover_image_url ? (
-        <div style={{ width: 64, height: 64, borderRadius: 10, overflow: "hidden", flexShrink: 0, background: "var(--bg3)" }}>
-          <img src={post.cover_image_url} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      {/* Cover image / VS placeholder */}
+      <div style={{ height: 160, background: "var(--bg3)", position: "relative", overflow: "hidden", flexShrink: 0 }}>
+        {post.cover_image_url ? (
+          <img src={post.cover_image_url} alt={post.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, color-mix(in srgb, var(--green) 18%, var(--bg3)) 0%, var(--bg3) 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontFamily: "var(--font-space)", fontSize: 32, fontWeight: 800, color: "var(--text3)", opacity: 0.3, letterSpacing: "-0.04em" }}>VS</span>
+          </div>
+        )}
+        <div style={{ position: "absolute", top: 14, left: 14, zIndex: 1 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 100, background: "color-mix(in srgb, var(--green) 22%, transparent)", border: "1px solid color-mix(in srgb, var(--green) 50%, transparent)", color: "var(--green)", textTransform: "uppercase", letterSpacing: "0.07em" }}>Comparison</span>
         </div>
-      ) : (
-        <div style={{ width: 64, height: 64, borderRadius: 10, flexShrink: 0, background: "linear-gradient(135deg, color-mix(in srgb, var(--green) 20%, var(--bg3)) 0%, var(--bg3) 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: 11, fontWeight: 800, color: "var(--text3)", opacity: 0.6, fontFamily: "var(--font-space)" }}>VS</span>
-        </div>
-      )}
-
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "2px 8px", borderRadius: 100, background: "color-mix(in srgb, var(--green) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--green) 40%, transparent)", marginBottom: 6 }}>
-          <span style={{ fontSize: 10, fontWeight: 700, color: "var(--green)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Comparison</span>
-        </div>
-        <div style={{ fontFamily: "var(--font-space)", fontSize: 14, fontWeight: 700, color: "var(--text)", lineHeight: 1.3, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{post.title}</div>
-        <div style={{ fontSize: 12, color: "var(--text3)" }}>{post.author_name}{dateStr ? ` · ${dateStr}` : ""}{post.read_time ? ` · ${post.read_time} read` : ""}</div>
       </div>
 
-      <span style={{ fontSize: 14, color: "var(--text3)", flexShrink: 0, alignSelf: "center" }}>→</span>
+      <div style={{ padding: "18px 20px 16px", display: "flex", flexDirection: "column", flex: 1 }}>
+        <h3 style={{ fontFamily: "var(--font-space)", fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--text)", lineHeight: 1.35, marginBottom: 10, flex: 1 }}>{post.title}</h3>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto", paddingTop: 12, borderTop: "1px solid var(--border)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 26, height: 26, borderRadius: 7, background: "color-mix(in srgb, var(--green) 18%, var(--bg3))", border: "1px solid color-mix(in srgb, var(--green) 35%, transparent)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <span style={{ fontSize: 9, fontWeight: 700, color: "var(--green)", fontFamily: "var(--font-space)" }}>{post.author_initials}</span>
+            </div>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 500, color: "var(--text2)" }}>{post.author_name}</div>
+              <div style={{ fontSize: 11, color: "var(--text3)" }}>{dateStr}{post.read_time ? ` · ${post.read_time}` : ""}</div>
+            </div>
+          </div>
+          <span style={{ fontSize: 12, color: "var(--accent)", fontWeight: 600, whiteSpace: "nowrap" }}>Read →</span>
+        </div>
+      </div>
     </Link>
   );
 }
