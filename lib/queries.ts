@@ -242,7 +242,7 @@ export async function getUserUpvotes(userId: string): Promise<string[]> {
     .from("upvotes")
     .select("tool_id")
     .eq("user_id", userId);
-  return data?.map((u) => u.tool_id) ?? [];
+  return data?.map((u: { tool_id: string }) => u.tool_id) ?? [];
 }
 
 export async function submitTool(data: {

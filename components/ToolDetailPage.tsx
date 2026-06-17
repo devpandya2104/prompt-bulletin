@@ -457,7 +457,7 @@ function Reviews({ tool, reviews }: { tool: ToolDetail; reviews: ToolReview[] })
       const reviewIds = reviews.map(r => r.id);
       if (!reviewIds.length) return;
       const { data } = await supabase.from("review_helpful_votes").select("review_id").in("review_id", reviewIds).eq("user_id", user.id);
-      if (data) setHelpful(Object.fromEntries(data.map(v => [v.review_id, true])));
+      if (data) setHelpful(Object.fromEntries(data.map((v: { review_id: string }) => [v.review_id, true])));
     };
     loadVotes();
     const { data: { subscription } } = createClient().auth.onAuthStateChange(() => loadVotes());

@@ -26,7 +26,7 @@ export default function Navbar({ config = DEFAULT_NAVBAR }: { config?: NavbarCon
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }: { data: { user: User | null } }) => setUser(user));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: unknown, session: { user: User } | null) => {
       setUser(session?.user ?? null);
     });
     return () => subscription.unsubscribe();
