@@ -713,6 +713,201 @@ function postUrl(slug: string, postType: string): string {
   return `/blog/${slug}`;
 }
 
+// ── JSON Import Panel ─────────────────────────────────────────────
+function JsonImportPanel({ onFill }: {
+  onFill: (result: { filled: string[]; skipped: string[]; newForm: Partial<FormState> }) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [raw, setRaw] = useState("");
+  const [status, setStatus] = useState<{ filled: string[]; skipped: string[] } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const parse = () => {
+    setError(null);
+    setStatus(null);
+    let json: Record<string, unknown>;
+    try {
+      json = JSON.parse(raw.trim());
+    } catch {
+      setError("Invalid JSON — check for missing quotes or commas and try again.");
+      return;
+    }
+
+    const filled: string[] = [];
+    const skipped: string[] = [];
+    const patch: Partial<FormState> = {};
+
+    const str = (key: string, formKey: keyof FormState) => {
+      const v = json[key];
+      if (typeof v === "string" && v.trim()) { (patch as Record<string, unknown>)[formKey] = v.trim(); filled.push(key); }
+      else skipped.push(key);
+    };
+    const arr = (key: string, formKey: keyof FormState) => {
+      const v = json[key];
+      if (Array.isArray(v) && v.length > 0) { (patch as Record<string, unknown>)[formKey] = v; filled.push(key); }
+      else skipped.push(key);
+    };
+
+    // Basic fields
+    str("title", "title");
+    str("slug", "slug");
+    str("excerpt", "excerpt");
+    str("category", "category");
+    str("read_time", "read_time");
+    str("cover_image_url", "cover_image_url");
+    str("author_name", "author_name");
+    str("author_initials", "author_initials");
+    str("author_role", "author_role");
+    str("author_bio", "author_bio");
+    str("focus_keyword", "focus_keyword");
+    str("seo_title", "seo_title");
+    str("seo_description", "seo_description");
+    str("seo_og_image", "seo_og_image");
+    str("canonical_url", "canonical_url");
+    str("related_tool_slug", "related_tool_slug");
+    arr("tags", "tags");
+
+    if (typeof json.is_published === "boolean") { patch.is_published = json.is_published; filled.push("is_published"); }
+    if (typeof json.upvote_count === "number") { patch.upvote_count = json.upvote_count; filled.push("upvote_count"); }
+
+    // published_at: convert ISO → datetime-local format
+    if (typeof json.published_at === "string" && json.published_at.trim()) {
+      try {
+        const d = new Date(json.published_at);
+        if (!isNaN(d.getTime())) {
+          patch.published_at = d.toISOString().slice(0, 16);
+          filled.push("published_at");
+        } else skipped.push("published_at");
+      } catch { skipped.push("published_at"); }
+    } else skipped.push("published_at");
+
+    // comparison_data deep merge
+    const cd = json.comparison_data as Record<string, unknown> | undefined;
+    if (cd && typeof cd === "object") {
+      const base = defaultComparisonData();
+
+      const cdStr = (obj: Record<string, unknown>, key: string, label: string) => {
+        const v = obj[key];
+        if (typeof v === "string" && v.trim()) { (base as unknown as Record<string, unknown>)[key] = v.trim(); filled.push(label); }
+        else skipped.push(label);
+      };
+      const cdArr = (obj: Record<string, unknown>, key: string, label: string) => {
+        const v = obj[key];
+        if (Array.isArray(v) && v.length > 0) { (base as unknown as Record<string, unknown>)[key] = v; filled.push(label); }
+        else skipped.push(label);
+      };
+
+      // Tools
+      for (const side of ["tool_a", "tool_b"] as const) {
+        const t = cd[side] as Record<string, unknown> | undefined;
+        if (t) {
+          const tool = { ...base[side] };
+          (["name", "slug", "logo_url", "website_url", "pricing"] as const).forEach((f) => {
+            const v = t[f];
+            if (typeof v === "string" && v.trim()) { tool[f] = v.trim(); filled.push(`${side}.${f}`); }
+            else skipped.push(`${side}.${f}`);
+          });
+          base[side] = tool;
+        }
+      }
+
+      // Quick verdict
+      const qv = cd.quick_verdict as Record<string, unknown> | undefined;
+      if (qv) {
+        if (typeof qv.summary === "string" && qv.summary.trim()) { base.quick_verdict.summary = qv.summary.trim(); filled.push("quick_verdict.summary"); } else skipped.push("quick_verdict.summary");
+        if (Array.isArray(qv.choose_a_if) && qv.choose_a_if.length) { base.quick_verdict.choose_a_if = qv.choose_a_if; filled.push("quick_verdict.choose_a_if"); } else skipped.push("quick_verdict.choose_a_if");
+        if (Array.isArray(qv.choose_b_if) && qv.choose_b_if.length) { base.quick_verdict.choose_b_if = qv.choose_b_if; filled.push("quick_verdict.choose_b_if"); } else skipped.push("quick_verdict.choose_b_if");
+      }
+
+      // Comparison table
+      if (Array.isArray(cd.comparison_table) && cd.comparison_table.length) { base.comparison_table = cd.comparison_table as ComparisonRow[]; filled.push("comparison_table"); } else skipped.push("comparison_table");
+
+      // HTML sections
+      cdStr(cd, "features_html",    "features_html");
+      cdStr(cd, "pricing_html",     "pricing_html");
+      cdStr(cd, "ease_of_use_html", "ease_of_use_html");
+      cdStr(cd, "performance_html", "performance_html");
+      cdStr(cd, "final_verdict_html", "final_verdict_html");
+
+      // Pros/cons/use cases
+      cdArr(cd, "pros_a",       "pros_a");
+      cdArr(cd, "cons_a",       "cons_a");
+      cdArr(cd, "pros_b",       "pros_b");
+      cdArr(cd, "cons_b",       "cons_b");
+      cdArr(cd, "use_cases_a",  "use_cases_a");
+      cdArr(cd, "use_cases_b",  "use_cases_b");
+
+      // FAQs
+      if (Array.isArray(cd.faqs) && cd.faqs.length) { base.faqs = cd.faqs as { q: string; a: string }[]; filled.push("faqs"); } else skipped.push("faqs");
+
+      patch.comparison_data = base;
+    }
+
+    setStatus({ filled, skipped: skipped.filter(s => !["cover_image_url", "canonical_url", "seo_og_image", "tool_a.logo_url", "tool_b.logo_url"].includes(s)) });
+    onFill({ filled, skipped, newForm: patch });
+  };
+
+  return (
+    <div style={{ marginBottom: 20, border: open ? "1px solid var(--accent)" : "1px solid var(--border)", borderRadius: 14, overflow: "hidden", transition: "border-color 0.2s" }}>
+      {/* Header */}
+      <button onClick={() => setOpen(o => !o)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", background: open ? "color-mix(in srgb, var(--accent) 8%, var(--bg2))" : "var(--bg2)", border: "none", cursor: "pointer", textAlign: "left" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 18 }}>⚡</span>
+          <div>
+            <div style={{ fontFamily: "var(--font-space)", fontSize: 14, fontWeight: 700, color: "var(--accent)" }}>Import from JSON</div>
+            <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 1 }}>Paste your AI-generated JSON to auto-fill all fields instantly</div>
+          </div>
+        </div>
+        <span style={{ fontSize: 18, color: "var(--text3)", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>⌄</span>
+      </button>
+
+      {open && (
+        <div style={{ padding: "0 20px 20px", background: "var(--bg2)" }}>
+          <textarea
+            value={raw}
+            onChange={(e) => { setRaw(e.target.value); setError(null); setStatus(null); }}
+            placeholder={'{\n  "title": "Tool A vs Tool B: ...",\n  "comparison_data": { ... }\n}'}
+            rows={12}
+            style={{ width: "100%", padding: "12px 14px", borderRadius: 10, background: "var(--bg)", border: `1px solid ${error ? "var(--red)" : "var(--border2)"}`, color: "var(--text)", fontSize: 12, fontFamily: "monospace", lineHeight: 1.6, resize: "vertical", outline: "none", boxSizing: "border-box" }}
+            onFocus={(e) => (e.target.style.borderColor = error ? "var(--red)" : "var(--accent)")}
+            onBlur={(e) => (e.target.style.borderColor = error ? "var(--red)" : "var(--border2)")}
+          />
+
+          {error && (
+            <p style={{ fontSize: 12, color: "var(--red)", margin: "8px 0 0", background: "var(--red-dim)", border: "1px solid var(--red)", borderRadius: 8, padding: "8px 12px" }}>
+              ✕ {error}
+            </p>
+          )}
+
+          {status && (
+            <div style={{ margin: "10px 0 0", padding: "12px 14px", background: "color-mix(in srgb, var(--green) 8%, var(--bg))", border: "1px solid color-mix(in srgb, var(--green) 40%, transparent)", borderRadius: 10 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--green)", marginBottom: 6 }}>
+                ✓ Filled {status.filled.length} fields
+                {status.skipped.length > 0 && <span style={{ color: "var(--text3)", fontWeight: 400, marginLeft: 8 }}>· {status.skipped.length} skipped (empty/missing)</span>}
+              </div>
+              {status.skipped.length > 0 && (
+                <div style={{ fontSize: 11, color: "var(--text3)", lineHeight: 1.6 }}>
+                  <span style={{ fontWeight: 600 }}>Needs manual input: </span>
+                  {status.skipped.join(", ")}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+            <button onClick={parse} style={{ padding: "9px 22px", borderRadius: 9, background: "var(--accent)", border: "none", color: "#000", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+              Fill Form ⚡
+            </button>
+            <button onClick={() => { setRaw(""); setError(null); setStatus(null); }} style={{ padding: "9px 14px", borderRadius: 9, border: "1px solid var(--border2)", background: "transparent", color: "var(--text3)", fontSize: 13, cursor: "pointer" }}>
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 type FormState = {
   title: string; slug: string; excerpt: string;
   category: string; read_time: string; cover_image_url: string;
@@ -1003,7 +1198,12 @@ export default function BlogEditor({ post, authors = [] }: { post: BlogPostDetai
 
       {/* ── Content (conditional on post_type) ── */}
       {form.post_type === "comparison" ? (
-        <ComparisonEditor data={form.comparison_data} onChange={(d) => upd("comparison_data", d)} />
+        <>
+          <JsonImportPanel onFill={({ newForm }) => {
+            setForm((f) => ({ ...f, ...newForm }));
+          }} />
+          <ComparisonEditor data={form.comparison_data} onChange={(d) => upd("comparison_data", d)} />
+        </>
       ) : form.post_type === "article" ? (
         <>
           <div style={sectionStyle}>
