@@ -3,6 +3,7 @@ import React from "react";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 import { submitReview } from "@/lib/queries";
 import { toggleHelpfulVote } from "@/app/actions";
 import type { ToolDetail, ToolReview, Tool } from "@/lib/queries";
@@ -747,7 +748,7 @@ export default function ToolDetailPage({ tool, reviews, related }: {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }: { data: { user: User | null } }) => {
       if (!user) return;
       const { data } = await supabase.from("upvotes").select("id").eq("tool_id", tool.id).eq("user_id", user.id).single();
       if (data) setUpvoted(true);
