@@ -184,6 +184,7 @@ const RichTextEditor = memo(function RichTextEditor({
 
   const editor = useEditor({
     autofocus: false,
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({ heading: { levels: [2, 3] }, link: false, underline: false }),
       LinkExtension.configure({ openOnClick: false, linkOnPaste: true }),
