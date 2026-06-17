@@ -18,10 +18,12 @@ const lbl: React.CSSProperties = {
 type Props = {
   seoSystem: SeoSystemConfig;
   toolCount: number;
-  blogCount: number;
+  articleCount: number;
+  comparisonCount: number;
+  bestCount: number;
 };
 
-export default function SEOPanel({ seoSystem, toolCount, blogCount }: Props) {
+export default function SEOPanel({ seoSystem, toolCount, articleCount, comparisonCount, bestCount }: Props) {
   const [tab, setTab] = useState<"sitemap" | "robots" | "global">("sitemap");
   const [cfg, setCfg] = useState<SeoSystemConfig>(seoSystem);
   const [newPath, setNewPath] = useState("");
@@ -41,7 +43,8 @@ export default function SEOPanel({ seoSystem, toolCount, blogCount }: Props) {
     }
   }, [tab, liveRobots]);
 
-  const totalUrls = 2 + toolCount + blogCount; // static + tools + posts
+  const STATIC_PAGES = 4; // /, /blog, /compare, /best
+  const totalUrls = STATIC_PAGES + toolCount + articleCount + comparisonCount + bestCount;
 
   const handleSave = () => {
     setSaving(true);
@@ -104,12 +107,13 @@ export default function SEOPanel({ seoSystem, toolCount, blogCount }: Props) {
       {tab === "sitemap" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {/* Stats */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
             {[
               { label: "Total URLs",   value: totalUrls },
-              { label: "Static pages", value: 2 },
+              { label: "Static pages", value: STATIC_PAGES },
               { label: "Tool pages",   value: toolCount },
-              { label: "Blog pages",   value: blogCount },
+              { label: "Articles",     value: articleCount },
+              { label: "Comparisons",  value: comparisonCount },
             ].map((s) => (
               <div key={s.label} style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 12, padding: "16px 20px" }}>
                 <div style={{ fontSize: 26, fontWeight: 700, color: "var(--accent)", fontFamily: "var(--font-space)" }}>{s.value}</div>
@@ -136,19 +140,32 @@ export default function SEOPanel({ seoSystem, toolCount, blogCount }: Props) {
           </div>
 
           <div style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 24px" }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>Included pages</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", margin: 0 }}>Included pages</p>
+            </div>
+            <p style={{ fontSize: 12, color: "var(--text3)", margin: "0 0 14px", lineHeight: 1.6 }}>
+              <strong style={{ color: "var(--text2)" }}>Priority</strong> is a hint to search engines (0.0–1.0) about which pages matter most on your site. It does <em>not</em> affect your ranking — it just tells crawlers where to spend their crawl budget first.
+            </p>
+            {/* Header row */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 110px 80px 60px", gap: 12, padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "1px solid var(--border)", marginBottom: 4 }}>
+              <span>Path</span><span>Count</span><span>Frequency</span><span style={{ textAlign: "right" }}>Priority</span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
               {[
-                { path: "/",     type: "Static",  freq: "Daily",   priority: "1.0" },
-                { path: "/blog", type: "Static",  freq: "Daily",   priority: "0.9" },
-                { path: "/tools/[slug]", type: `${toolCount} tools`, freq: "Weekly", priority: "0.8" },
-                { path: "/blog/[slug]",  type: `${blogCount} posts`, freq: "Monthly", priority: "0.7" },
+                { path: "/",                 count: "Static",                     freq: "Daily",   priority: "1.0", color: "var(--accent)" },
+                { path: "/blog",             count: "Static",                     freq: "Daily",   priority: "0.9", color: "var(--accent)" },
+                { path: "/compare",          count: "Static",                     freq: "Weekly",  priority: "0.85", color: "var(--accent)" },
+                { path: "/best",             count: "Static",                     freq: "Weekly",  priority: "0.85", color: "var(--accent)" },
+                { path: "/tools/[slug]",     count: `${toolCount} tools`,          freq: "Weekly",  priority: "0.8",  color: "var(--accent2)" },
+                { path: "/compare/[slug]",   count: `${comparisonCount} posts`,    freq: "Monthly", priority: "0.75", color: "var(--green)" },
+                { path: "/best/[slug]",      count: `${bestCount} posts`,          freq: "Monthly", priority: "0.75", color: "var(--green)" },
+                { path: "/blog/[slug]",      count: `${articleCount} posts`,       freq: "Monthly", priority: "0.7",  color: "var(--accent2)" },
               ].map((row) => (
-                <div key={row.path} style={{ display: "grid", gridTemplateColumns: "1fr 100px 80px 60px", gap: 12, padding: "8px 12px", borderRadius: 8, background: "rgba(255,255,255,0.02)", fontSize: 12 }}>
-                  <code style={{ color: "var(--accent)" }}>{row.path}</code>
-                  <span style={{ color: "var(--text3)" }}>{row.type}</span>
+                <div key={row.path} style={{ display: "grid", gridTemplateColumns: "1fr 110px 80px 60px", gap: 12, padding: "8px 12px", borderRadius: 8, background: "rgba(255,255,255,0.02)", fontSize: 12 }}>
+                  <code style={{ color: row.color }}>{row.path}</code>
+                  <span style={{ color: "var(--text3)" }}>{row.count}</span>
                   <span style={{ color: "var(--text3)" }}>{row.freq}</span>
-                  <span style={{ color: "var(--text3)", textAlign: "right" }}>{row.priority}</span>
+                  <span style={{ color: "var(--text3)", textAlign: "right", fontFamily: "var(--font-space)", fontWeight: 600 }}>{row.priority}</span>
                 </div>
               ))}
             </div>
