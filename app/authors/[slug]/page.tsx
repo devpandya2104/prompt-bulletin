@@ -15,7 +15,7 @@ function nameToSlug(name: string) {
 }
 
 async function getAuthorBySlug(slug: string) {
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const { data } = await supabase.from("authors").select("*").order("sort_order");
   return (data ?? []).find((a: Author) => nameToSlug(a.name) === slug) as Author | undefined;
 }
@@ -45,7 +45,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
   const author = await getAuthorBySlug(slug);
   if (!author) notFound();
 
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const { data: posts } = await supabase
     .from("blog_posts")
     .select("title, slug, excerpt, category, read_time, cover_image_url, published_at, post_type")

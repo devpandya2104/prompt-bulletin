@@ -5,7 +5,7 @@ import ToolsTable from "@/components/admin/ToolsTable";
 export const revalidate = 0;
 
 export default async function AdminToolsPage() {
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const { data: tools } = await supabase
     .from("tools")
     .select("id, name, slug, rating, upvote_count, is_published, categories(name)")

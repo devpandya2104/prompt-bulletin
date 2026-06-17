@@ -5,7 +5,7 @@ import type { Author } from "@/lib/queries";
 export const revalidate = 0;
 
 export default async function AdminAuthorsPage() {
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
 
   const { data: authorsData } = await supabase.from("authors").select("*").order("sort_order");
   const authors = (authorsData ?? []) as Author[];

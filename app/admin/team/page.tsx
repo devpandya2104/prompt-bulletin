@@ -4,7 +4,7 @@ import TeamManager from "@/components/admin/TeamManager";
 export const revalidate = 0;
 
 export default async function AdminTeamPage() {
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const { data: profiles } = await supabase
     .from("profiles")
     .select("id, email, role, created_at")

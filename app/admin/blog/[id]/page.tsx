@@ -7,7 +7,7 @@ export const revalidate = 0;
 
 export default async function AdminBlogEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const [{ data: post }, { data: authors }] = await Promise.all([
     supabase.from("blog_posts").select("*").eq("id", id).single(),
     supabase.from("authors").select("*").order("sort_order"),

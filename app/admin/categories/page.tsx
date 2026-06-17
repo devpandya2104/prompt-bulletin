@@ -4,7 +4,7 @@ import CategoriesManager from "@/components/admin/CategoriesManager";
 export const revalidate = 0;
 
 export default async function AdminCategoriesPage() {
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
 
   const { data: categories } = await supabase
     .from("categories")

@@ -20,7 +20,7 @@ async function StatCard({ label, value, href, color = "var(--accent)" }: {
 }
 
 export default async function AdminDashboard() {
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
 
   const [
     { count: totalTools },

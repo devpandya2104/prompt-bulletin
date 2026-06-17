@@ -5,7 +5,7 @@ import type { Author } from "@/lib/queries";
 export const revalidate = 0;
 
 export default async function AdminBlogNewPage() {
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const { data: authors } = await supabase.from("authors").select("*").order("sort_order");
   return <BlogEditor post={null} authors={(authors ?? []) as Author[]} />;
 }

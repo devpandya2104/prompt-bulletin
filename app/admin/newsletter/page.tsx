@@ -4,7 +4,7 @@ import NewsletterList from "@/components/admin/NewsletterList";
 export const revalidate = 0;
 
 export default async function AdminNewsletterPage() {
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const { data } = await supabase
     .from("newsletter_subscribers")
     .select("id, email, created_at")

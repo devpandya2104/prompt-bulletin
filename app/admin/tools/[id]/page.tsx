@@ -7,7 +7,7 @@ export const revalidate = 0;
 
 export default async function AdminToolEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
 
   const [{ data: tool }, { data: categories }, { data: reviews }] = await Promise.all([
     supabase.from("tools").select("*").eq("id", id).single(),

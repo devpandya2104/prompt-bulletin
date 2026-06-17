@@ -20,7 +20,7 @@ function nameToSlug(name: string) {
 }
 
 export default async function AuthorsPage() {
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const { data } = await supabase.from("authors").select("*").order("sort_order");
   const authors = (data ?? []) as Author[];
 

@@ -5,7 +5,7 @@ import BlogTable from "@/components/admin/BlogTable";
 export const revalidate = 0;
 
 export default async function AdminBlogPage() {
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const { data: posts } = await supabase
     .from("blog_posts")
     .select("id, title, slug, category, post_type, is_published, published_at, upvote_count")
