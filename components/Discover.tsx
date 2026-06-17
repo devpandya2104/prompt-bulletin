@@ -32,7 +32,7 @@ export default function Discover({ tools, categories, config = DEFAULT_DISCOVER 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       const { data } = await supabase.from("upvotes").select("tool_id").eq("user_id", user.id);
-      setUserUpvotes(data?.map((u) => u.tool_id) ?? []);
+      setUserUpvotes(data?.map((u: { tool_id: string }) => u.tool_id) ?? []);
     };
     loadUpvotes();
     const { data: { subscription } } = createClient().auth.onAuthStateChange(() => loadUpvotes());
