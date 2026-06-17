@@ -935,6 +935,7 @@ export default function BlogEditor({ post, authors = [] }: { post: BlogPostDetai
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState<"idle" | "saving" | "ok" | "error">("idle");
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Separate richtext content from special blocks on load
   const existingBlocks = (post?.body_blocks ?? []) as BodyBlock[];
@@ -1024,9 +1025,11 @@ export default function BlogEditor({ post, authors = [] }: { post: BlogPostDetai
         }
         setSaved("ok");
         setTimeout(() => setSaved("idle"), 3000);
-      } catch {
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setSaveError(msg);
         setSaved("error");
-        setTimeout(() => setSaved("idle"), 4000);
+        setTimeout(() => { setSaved("idle"); setSaveError(null); }, 6000);
       }
     });
   };
@@ -1064,6 +1067,13 @@ export default function BlogEditor({ post, authors = [] }: { post: BlogPostDetai
           </button>
         </div>
       </div>
+
+      {/* ── Save error banner ── */}
+      {saveError && (
+        <div style={{ background: "color-mix(in srgb, var(--red) 12%, var(--bg2))", border: "1px solid var(--red)", borderRadius: 10, padding: "12px 16px", marginBottom: 16, fontSize: 13, color: "var(--red)" }}>
+          <strong>Save failed:</strong> {saveError}
+        </div>
+      )}
 
       {/* ── Basic info ── */}
       <div style={sectionStyle}>
