@@ -196,14 +196,13 @@ const RichTextEditor = memo(function RichTextEditor({
     editorProps: { attributes: { class: "pb-rte" } },
   });
 
-  // Sync content if parent changes (e.g., switching posts)
+  // Sync content if parent changes (e.g., switching posts or JSON import)
   useEffect(() => {
     if (editor && !editor.isDestroyed) {
       const current = editor.getHTML();
       if (value !== current) editor.commands.setContent(value || "");
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editor]);
+  }, [editor, value]);
 
   return (
     <div style={{ border: "1px solid var(--border2)", borderRadius: 10, overflow: "hidden" }}
