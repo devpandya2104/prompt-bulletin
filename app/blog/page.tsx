@@ -55,7 +55,17 @@ export default async function BlogIndexPage({
     query = query.eq("category", activeCategory);
   }
 
-  const { data: posts, count } = await query;
+  const [{ data: posts, count }, { data: comparisons }] = await Promise.all([
+    query,
+    supabase
+      .from("blog_posts")
+      .select("id, title, slug, excerpt, author_name, author_initials, category, read_time, cover_image_url, upvote_count, is_published, published_at")
+      .eq("is_published", true)
+      .eq("post_type", "comparison")
+      .order("published_at", { ascending: false })
+      .limit(12),
+  ]);
+
   const totalPages = Math.ceil((count ?? 0) / PER_PAGE);
 
   return (
@@ -63,6 +73,7 @@ export default async function BlogIndexPage({
       <Navbar />
       <BlogPage
         posts={(posts ?? []) as BlogPost[]}
+        comparisonPosts={(comparisons ?? []) as BlogPost[]}
         currentPage={page}
         totalPages={totalPages}
         activeCategory={activeCategory}

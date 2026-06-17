@@ -190,10 +190,41 @@ function SidebarNewsletter() {
   );
 }
 
+// ── Comparison mini-card (for /blog Comparisons section) ─────────────────────
+function ComparisonMiniCard({ post }: { post: BlogPost }) {
+  const dateStr = post.published_at ? new Date(post.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+  return (
+    <Link href={`/compare/${post.slug}`} style={{ display: "flex", gap: 16, textDecoration: "none", padding: "16px 20px", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 14, transition: "all 0.2s", alignItems: "flex-start" }}
+      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = "var(--accent)"; el.style.transform = "translateX(3px)"; }}
+      onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = "var(--border)"; el.style.transform = "none"; }}>
+
+      {post.cover_image_url ? (
+        <div style={{ width: 64, height: 64, borderRadius: 10, overflow: "hidden", flexShrink: 0, background: "var(--bg3)" }}>
+          <img src={post.cover_image_url} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        </div>
+      ) : (
+        <div style={{ width: 64, height: 64, borderRadius: 10, flexShrink: 0, background: "linear-gradient(135deg, color-mix(in srgb, var(--green) 20%, var(--bg3)) 0%, var(--bg3) 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: "var(--text3)", opacity: 0.6, fontFamily: "var(--font-space)" }}>VS</span>
+        </div>
+      )}
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "2px 8px", borderRadius: 100, background: "color-mix(in srgb, var(--green) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--green) 40%, transparent)", marginBottom: 6 }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "var(--green)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Comparison</span>
+        </div>
+        <div style={{ fontFamily: "var(--font-space)", fontSize: 14, fontWeight: 700, color: "var(--text)", lineHeight: 1.3, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{post.title}</div>
+        <div style={{ fontSize: 12, color: "var(--text3)" }}>{post.author_name}{dateStr ? ` · ${dateStr}` : ""}{post.read_time ? ` · ${post.read_time} read` : ""}</div>
+      </div>
+
+      <span style={{ fontSize: 14, color: "var(--text3)", flexShrink: 0, alignSelf: "center" }}>→</span>
+    </Link>
+  );
+}
+
 // ── Main blog page ────────────────────────────────────────────────────────────
 const ALL_CATEGORIES = ["All", ...BLOG_CATEGORIES];
 
-export default function BlogPage({ posts, currentPage = 1, totalPages = 1, activeCategory = "All" }: { posts: BlogPost[]; currentPage?: number; totalPages?: number; activeCategory?: string }) {
+export default function BlogPage({ posts, comparisonPosts = [], currentPage = 1, totalPages = 1, activeCategory = "All" }: { posts: BlogPost[]; comparisonPosts?: BlogPost[]; currentPage?: number; totalPages?: number; activeCategory?: string }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
@@ -209,7 +240,7 @@ export default function BlogPage({ posts, currentPage = 1, totalPages = 1, activ
     router.push(`/blog${params.toString() ? `?${params}` : ""}`);
   };
 
-  const trending = [...posts].sort((a, b) => b.upvote_count - a.upvote_count).slice(0, 4);
+  const trending = [...posts, ...comparisonPosts].sort((a, b) => b.upvote_count - a.upvote_count).slice(0, 4);
 
   return (
     <div>
@@ -252,6 +283,27 @@ export default function BlogPage({ posts, currentPage = 1, totalPages = 1, activ
         {query === "" && featured && (
           <div style={{ marginBottom: 48 }}>
             <FeaturedPost post={featured} />
+          </div>
+        )}
+
+        {/* Comparisons section */}
+        {comparisonPosts.length > 0 && (
+          <div style={{ marginBottom: 56 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 3, height: 20, background: "var(--green)", borderRadius: 2 }} />
+                <span style={{ fontFamily: "var(--font-space)", fontSize: 18, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.02em" }}>Comparisons</span>
+                <span style={{ fontSize: 12, color: "var(--text3)", background: "var(--bg3)", border: "1px solid var(--border)", padding: "2px 8px", borderRadius: 100 }}>{comparisonPosts.length}</span>
+              </div>
+              <Link href="/compare" style={{ fontSize: 13, color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.textDecoration = "underline")}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.textDecoration = "none")}>
+                See all →
+              </Link>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 12 }}>
+              {comparisonPosts.map(p => <ComparisonMiniCard key={p.id} post={p} />)}
+            </div>
           </div>
         )}
 
@@ -313,17 +365,21 @@ export default function BlogPage({ posts, currentPage = 1, totalPages = 1, activ
             <div style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 16, padding: 20, marginBottom: 16 }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>Trending this week</div>
               <div style={{ display: "flex", flexDirection: "column" }}>
-                {trending.map((p, i) => (
-                  <Link key={p.id} href={`/blog/${p.slug}`} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 0", borderBottom: i < trending.length - 1 ? "1px solid var(--border)" : "none", textDecoration: "none", transition: "opacity 0.15s" }}
-                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = "0.7")}
-                    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}>
-                    <span style={{ fontFamily: "var(--font-space)", fontSize: 22, fontWeight: 700, color: "var(--border2)", letterSpacing: "-0.04em", lineHeight: 1, flexShrink: 0, width: 28 }}>0{i + 1}</span>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", lineHeight: 1.4, marginBottom: 4 }}>{p.title}</div>
-                      <div style={{ fontSize: 11, color: "var(--text3)" }}>{p.upvote_count} upvotes · {p.read_time}</div>
-                    </div>
-                  </Link>
-                ))}
+                {trending.map((p, i) => {
+                  const isComparison = comparisonPosts.some(c => c.id === p.id);
+                  const href = isComparison ? `/compare/${p.slug}` : `/blog/${p.slug}`;
+                  return (
+                    <Link key={p.id} href={href} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 0", borderBottom: i < trending.length - 1 ? "1px solid var(--border)" : "none", textDecoration: "none", transition: "opacity 0.15s" }}
+                      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = "0.7")}
+                      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}>
+                      <span style={{ fontFamily: "var(--font-space)", fontSize: 22, fontWeight: 700, color: "var(--border2)", letterSpacing: "-0.04em", lineHeight: 1, flexShrink: 0, width: 28 }}>0{i + 1}</span>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", lineHeight: 1.4, marginBottom: 4 }}>{p.title}</div>
+                        <div style={{ fontSize: 11, color: "var(--text3)" }}>{p.upvote_count} upvotes · {p.read_time}{isComparison ? " · Comparison" : ""}</div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
 
