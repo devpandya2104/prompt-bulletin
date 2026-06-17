@@ -1017,19 +1017,28 @@ export default function BlogEditor({ post, authors = [] }: { post: BlogPostDetai
           canonical_url:   form.canonical_url || null,
           comparison_data: form.post_type === "comparison" ? form.comparison_data : null,
         };
+        let errMsg: string | undefined;
         if (post) {
-          await saveBlogPost(post.id, payload);
+          const result = await saveBlogPost(post.id, payload);
+          errMsg = result.error;
         } else {
-          const created = await createBlogPost(payload);
-          router.replace(`/admin/blog/${created.id}`);
+          const result = await createBlogPost(payload);
+          errMsg = result.error;
+          if (!errMsg && result.id) router.replace(`/admin/blog/${result.id}`);
         }
-        setSaved("ok");
-        setTimeout(() => setSaved("idle"), 3000);
+        if (errMsg) {
+          setSaveError(errMsg);
+          setSaved("error");
+          setTimeout(() => { setSaved("idle"); setSaveError(null); }, 8000);
+        } else {
+          setSaved("ok");
+          setTimeout(() => setSaved("idle"), 3000);
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         setSaveError(msg);
         setSaved("error");
-        setTimeout(() => { setSaved("idle"); setSaveError(null); }, 6000);
+        setTimeout(() => { setSaved("idle"); setSaveError(null); }, 8000);
       }
     });
   };

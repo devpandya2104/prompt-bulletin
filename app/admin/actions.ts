@@ -48,10 +48,10 @@ export async function deleteReview(id: string) {
 
 // ── Blog post actions ──────────────────────────────────────────────
 
-export async function saveBlogPost(id: string, data: Record<string, unknown>) {
+export async function saveBlogPost(id: string, data: Record<string, unknown>): Promise<{ error?: string }> {
   const supabase = await createAdminClient();
   const { error } = await supabase.from("blog_posts").update(data).eq("id", id);
-  if (error) throw new Error(error.message);
+  if (error) return { error: error.message };
   revalidatePath(`/blog/${data.slug}`);
   revalidatePath(`/compare/${data.slug}`);
   revalidatePath(`/best/${data.slug}`);
@@ -59,15 +59,17 @@ export async function saveBlogPost(id: string, data: Record<string, unknown>) {
   revalidatePath("/compare");
   revalidatePath("/best");
   revalidatePath("/", "layout");
+  return {};
 }
 
-export async function createBlogPost(data: Record<string, unknown>) {
+export async function createBlogPost(data: Record<string, unknown>): Promise<{ error?: string; id?: string; slug?: string }> {
   const supabase = await createAdminClient();
   const { data: post, error } = await supabase.from("blog_posts").insert(data).select().single();
-  if (error) throw new Error(error.message);
+  if (error) return { error: error.message };
   revalidatePath("/blog");
   revalidatePath("/", "layout");
-  return post as { id: string; slug: string };
+  const p = post as { id: string; slug: string };
+  return { id: p.id, slug: p.slug };
 }
 
 export async function deleteBlogPost(id: string) {
